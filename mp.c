@@ -15,6 +15,20 @@ struct cpu cpus[NCPU];
 int ncpu;
 uchar ioapicid;
 
+/**
+* This method calculates the sum of elements in the input array <paramref name="addr"/> up to a specified length <paramref name="len"/>.
+* 
+* @param addr Pointer to the array of unsigned characters.
+* @param len Length of the array to be considered for sum calculation.
+* @return The sum of elements in the array up to the specified length.
+* @throws None
+* 
+* Example:
+* uchar arr[] = {1, 2, 3, 4, 5};
+* int length = 5;
+* uchar result = sum(arr, length);
+* // After execution, result will contain the sum of elements {1, 2, 3, 4, 5} which is 15.
+*/
 static uchar
 sum(uchar *addr, int len)
 {
@@ -26,7 +40,26 @@ sum(uchar *addr, int len)
   return sum;
 }
 
-// Look for an MP structure in the len bytes at addr.
+/**
+* This method searches for a specific structure within a memory region starting at address <paramref name="a"/> with a length of <paramref name="len"/>.
+* It iterates through the memory region checking for the structure "_MP_" and verifying its integrity using the sum function.
+* If a valid structure is found, it returns a pointer to that structure, otherwise it returns 0.
+* 
+* @param a The starting address of the memory region to search.
+* @param len The length of the memory region to search.
+* @return A pointer to the found structure if successful, otherwise 0.
+* @throws None
+* 
+* Example:
+* <code>
+* struct mp* result = mpsearch1(0x1000, 256);
+* if(result != 0) {
+*     // Found a valid structure, process it
+* } else {
+*     // Structure not found
+* }
+* </code>
+*/
 static struct mp*
 mpsearch1(uint a, int len)
 {
@@ -40,11 +73,18 @@ mpsearch1(uint a, int len)
   return 0;
 }
 
-// Search for the MP Floating Pointer Structure, which according to the
-// spec is in one of the following three locations:
-// 1) in the first KB of the EBDA;
-// 2) in the last KB of system base memory;
-// 3) in the BIOS ROM between 0xE0000 and 0xFFFFF.
+/**            
+* This method searches for a specific memory region based on the BIOS Data Area (BDA) information.            
+* It retrieves the base memory address from the BDA and calculates the physical address based on the segment values.            
+* If a valid memory region is found, it returns the corresponding memory structure.            
+* If no valid memory region is found, it returns a default memory structure based on predefined values.            
+* 
+* @return struct mp* - A pointer to the memory structure found or a default memory structure.            
+* @throws NoMemoryRegionFoundException - If no valid memory region is found based on the BDA information.            
+* 
+* Example:            
+* struct mp* memoryRegion = mpsearch();            
+*/
 static struct mp*
 mpsearch(void)
 {
@@ -64,11 +104,30 @@ mpsearch(void)
   return mpsearch1(0xF0000, 0x10000);
 }
 
-// Search for an MP configuration table.  For now,
-// don't accept the default configurations (physaddr == 0).
-// Check for correct signature, calculate the checksum and,
-// if correct, check the version.
-// To do: check extended table checksum.
+/**
+* This method initializes and configures the MP configuration structure based on the provided MP pointer.
+* It checks if the MP pointer is valid and the physical address is not zero before proceeding with the configuration.
+* It verifies the MP configuration signature and version to ensure compatibility.
+* Additionally, it performs a checksum validation on the configuration data.
+* If all checks pass, it assigns the MP pointer to the provided pointer and returns the configured MP configuration structure.
+* If any of the checks fail, it returns 0 to indicate an error in configuration.
+*
+* @param pmp Pointer to a pointer to the MP structure.
+* @return Pointer to the configured MP configuration structure if successful, otherwise 0.
+*
+* @exception Returns 0 if the MP pointer is invalid or the physical address is zero.
+* @exception Returns 0 if the MP configuration signature is not "PCMP" or the version is not 1 or 4.
+* @exception Returns 0 if the checksum validation of the configuration data fails.
+*
+* Example:
+* struct mp *mp;
+* struct mpconf *conf = mpconfig(&mp);
+* if (conf != 0) {
+*     // Configuration successful, use conf and mp
+* } else {
+*     // Configuration failed
+* }
+*/
 static struct mpconf*
 mpconfig(struct mp **pmp)
 {
@@ -88,6 +147,14 @@ mpconfig(struct mp **pmp)
   return conf;
 }
 
+/**
+* This method initializes the multiprocessing environment by configuring the system based on the detected hardware components.
+* It checks if the system is expected to run on a Symmetric Multiprocessing (SMP) architecture and sets up necessary data structures accordingly.
+* It handles processor information, I/O APIC information, and other relevant configurations.
+* If the system is not suitable for multiprocessing, it triggers a panic.
+* Additionally, it includes a specific handling for the IMCR register on real hardware.
+* Note: This method assumes certain hardware configurations and may not be compatible with all systems.
+*/
 void
 mpinit(void)
 {

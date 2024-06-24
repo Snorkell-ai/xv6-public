@@ -3,6 +3,18 @@
 #include "user.h"
 #include "fs.h"
 
+/**
+* This method extracts the file name from the given file path.
+* 
+* @param path The file path from which the file name needs to be extracted.
+* @return A pointer to the extracted file name.
+* @exception If the length of the file name exceeds the maximum directory size, it returns the original pointer without padding.
+* 
+* Example:
+* char* filePath = "/home/user/example.txt";
+* char* fileName = fmtname(filePath);
+* // fileName will contain "example.txt"
+*/
 char*
 fmtname(char *path)
 {
@@ -22,6 +34,16 @@ fmtname(char *path)
   return buf;
 }
 
+/**
+* This method lists the contents of the specified directory path.
+* It takes a string <paramref name="path"/> as input, representing the directory path to be listed.
+* If the directory cannot be opened or its status cannot be determined, appropriate error messages are displayed.
+* For each file or subdirectory within the specified directory, information such as name, type, inode number, and size is printed.
+* If the path exceeds the buffer size, an error message is displayed.
+* This method does not handle exceptions explicitly but relies on system calls for file operations.
+* Example:
+* ls("/path/to/directory");
+*/
 void
 ls(char *path)
 {
@@ -70,6 +92,18 @@ ls(char *path)
   close(fd);
 }
 
+/**
+* This method executes the ls command on the specified directories or files provided as arguments.
+* 
+* @param argc The number of arguments passed to the program.
+* @param argv An array of strings containing the arguments passed to the program.
+* 
+* @exception If no arguments are provided, the method will execute ls(".") and exit.
+* 
+* Example:
+* main(3, ["program", "dir1", "dir2"])
+* This will execute ls("dir1") and ls("dir2") sequentially.
+*/
 int
 main(int argc, char *argv[])
 {

@@ -14,6 +14,17 @@ extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
 
+/**
+* This method initializes the interrupt descriptor table (IDT) by setting gates for each interrupt vector.
+* It sets gates for all 256 vectors with appropriate privilege levels and segment selectors.
+* Additionally, it sets a gate for the system call interrupt vector with user privilege level.
+* Finally, it initializes a lock for managing time-related operations.
+*
+* @throws None
+*
+* Example:
+* tvinit();
+*/
 void
 tvinit(void)
 {
@@ -26,13 +37,34 @@ tvinit(void)
   initlock(&tickslock, "time");
 }
 
+/**
+* This method initializes the Interrupt Descriptor Table (IDT) by loading the IDT base address and limit.
+* It calls the function 'lidt' to load the IDT with the provided IDT array and its size.
+* @throws None
+* @example
+* idtinit();
+*/
 void
 idtinit(void)
 {
   lidt(idt, sizeof(idt));
 }
 
-//PAGEBREAK: 41
+/**
+* This method handles various traps based on the trap number provided in the input <paramref name="tf"/>.
+* It includes handling system calls, timer interrupts, IDE interrupts, keyboard interrupts, and other spurious interrupts.
+* If a process is killed during a trap, it will exit. If a process misbehaves in user space, it will be marked as killed.
+* The method also forces a process to exit if it has been killed and is in user space, and yields the CPU on a clock tick.
+* 
+* @param tf Pointer to the trapframe structure containing trap information
+* @return void
+* @exception If a process is killed during a trap and is in user space, it will exit.
+* @exception If a process misbehaves in user space, it will be marked as killed.
+* @example
+* struct trapframe tf;
+* // Initialize tf with trap information
+* trap(&tf);
+*/
 void
 trap(struct trapframe *tf)
 {

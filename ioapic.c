@@ -31,6 +31,19 @@ struct ioapic {
   uint data;
 };
 
+/**
+* This method reads the value from the specified register in the IOAPIC.
+* It takes an integer parameter <paramref name="reg"/> representing the register to read from.
+* It then assigns the value of the specified register in the IOAPIC to the data field and returns it.
+* 
+* @param reg The register number to read from in the IOAPIC.
+* @return The data read from the specified register in the IOAPIC.
+* @exception None
+* 
+* Example:
+* 
+* uint data = ioapicread(0x10);
+*/
 static uint
 ioapicread(int reg)
 {
@@ -38,6 +51,17 @@ ioapicread(int reg)
   return ioapic->data;
 }
 
+/**
+* This method writes data to the specified register in the IOAPIC.
+* 
+* @param reg The register to write data to.
+* @param data The data to be written to the register.
+* 
+* @exception None
+* 
+* Example:
+* ioapicwrite(0x10, 0xFF);
+*/
 static void
 ioapicwrite(int reg, uint data)
 {
@@ -45,6 +69,16 @@ ioapicwrite(int reg, uint data)
   ioapic->data = data;
 }
 
+/**
+* This method initializes the IOAPIC by setting all interrupts to be edge-triggered, active high, disabled, and not routed to any CPUs.
+* It reads the maximum number of interrupts supported by the IOAPIC and the IOAPIC ID to verify if it's a MP system.
+* If the ID is not equal to ioapicid, it prints a message indicating that it's not a MP system.
+* 
+* @throws None
+* 
+* Example:
+* ioapicinit();
+*/
 void
 ioapicinit(void)
 {
@@ -64,6 +98,18 @@ ioapicinit(void)
   }
 }
 
+/**
+* This method enables a specific interrupt <paramref name="irq"/> for a given CPU <paramref name="cpunum"/> by configuring it as edge-triggered, active high, and routed to the specified CPU.
+* It utilizes the IOAPIC registers to set the interrupt configuration.
+* 
+* @param irq The interrupt number to be enabled.
+* @param cpunum The CPU number to which the interrupt is routed.
+* 
+* @exception None
+* 
+* Example:
+* ioapicenable(5, 1);
+*/
 void
 ioapicenable(int irq, int cpunum)
 {

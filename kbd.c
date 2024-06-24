@@ -3,6 +3,22 @@
 #include "defs.h"
 #include "kbd.h"
 
+/**
+* This method reads a character from the keyboard input and returns the corresponding ASCII value.
+* It handles key presses, releases, and special keys like shift, control, and caps lock.
+* 
+* @return The ASCII value of the character read from the keyboard input. Returns -1 if no valid character is read.
+* 
+* @exception If an error occurs while reading the keyboard input or processing the key, -1 is returned.
+* 
+* Example:
+* int key = kbdgetc();
+* if(key != -1) {
+*     printf("Key pressed: %c\n", key);
+* } else {
+*     printf("Error reading keyboard input.\n");
+* }
+*/
 int
 kbdgetc(void)
 {
@@ -43,6 +59,15 @@ kbdgetc(void)
   return c;
 }
 
+/**
+* This method handles keyboard interrupts by calling the consoleintr function with the kbdgetc function as a parameter.
+* 
+* @exception This method does not throw any exceptions.
+* 
+* @example
+* kbdintr();
+* // This will handle keyboard interrupts by calling the consoleintr function with the kbdgetc function.
+*/
 void
 kbdintr(void)
 {

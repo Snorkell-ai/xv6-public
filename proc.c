@@ -24,6 +24,14 @@ void
 pinit(void)
 {
   initlock(&ptable.lock, "ptable");
+/**
+* This method defines the external function trapret, which is used to handle exceptions and return from a trap or interrupt service routine.
+* 
+* @exception None
+* 
+* @example
+* trapret();
+*/
 }
 
 // Must be called with interrupts disabled
@@ -41,20 +49,47 @@ mycpu(void)
   
   if(readeflags()&FL_IF)
     panic("mycpu called with interrupts enabled\n");
+  /**
+  * This method initializes the process table by calling the function initlock with the process table lock and a string identifier "ptable".
+  * 
+  * @throws None
+  * 
+  * Example:
+  * pinit();
+  */
   
   apicid = lapicid();
   // APIC IDs are not guaranteed to be contiguous. Maybe we should have
   // a reverse map, or reserve a register to store &cpus[i].
   for (i = 0; i < ncpu; ++i) {
     if (cpus[i].apicid == apicid)
-      return &cpus[i];
+  /**
+  * This method returns the difference between the result of the function mycpu() and the variable cpus.
+  * 
+  * @return The difference between mycpu() and cpus.
+  * 
+  * @exception None
+  * 
+  * @example
+  * int result = cpuid();
+  * // result will contain the difference between the result of mycpu() and cpus
+  */
   }
   panic("unknown apicid\n");
 }
 
 // Disable interrupts so that we are not rescheduled
-// while reading proc from the cpu structure
-struct proc*
+/**
+* This method returns a pointer to the CPU struct representing the current CPU.
+* It checks if interrupts are enabled and panics if they are.
+* It then retrieves the local APIC ID and searches for a matching CPU struct in the cpus array.
+* If a matching CPU struct is found, it returns a pointer to it.
+* If no matching CPU struct is found, it panics with an "unknown apicid" message.
+* @return Pointer to the CPU struct representing the current CPU.
+* @exception Panics if interrupts are enabled or if the APIC ID is unknown.
+* Example:
+* struct cpu* current_cpu = mycpu();
+*/
 myproc(void) {
   struct cpu *c;
   struct proc *p;
@@ -73,8 +108,17 @@ myproc(void) {
 static struct proc*
 allocproc(void)
 {
-  struct proc *p;
-  char *sp;
+/**
+* This method returns the process structure pointer of the current running process.
+* It pushes and pops the interrupt flag to ensure atomicity.
+* 
+* @return struct proc* - Pointer to the process structure of the current running process.
+* 
+* @exception None
+* 
+* @example
+* struct proc* current_process = myproc();
+*/
 
   acquire(&ptable.lock);
 
@@ -86,11 +130,24 @@ allocproc(void)
   return 0;
 
 found:
-  p->state = EMBRYO;
-  p->pid = nextpid++;
-
-  release(&ptable.lock);
-
+  /**
+  * This method allocates a new process in the system.
+  * It searches for an unused process in the process table and initializes it.
+  * If successful, it returns a pointer to the newly allocated process.
+  * If unsuccessful, it returns 0.
+  *
+  * @return Pointer to the newly allocated process if successful, otherwise 0.
+  *
+  * @exception If kernel stack allocation fails, the process state is set to UNUSED and 0 is returned.
+  *
+  * Example:
+  * struct proc* newProcess = allocproc();
+  * if (newProcess != 0) {
+  *     // Process successfully allocated
+  * } else {
+  *     // Allocation failed
+  * }
+  */
   // Allocate kernel stack.
   if((p->kstack = kalloc()) == 0){
     p->state = UNUSED;
@@ -136,8 +193,15 @@ userinit(void)
   p->tf->es = p->tf->ds;
   p->tf->ss = p->tf->ds;
   p->tf->eflags = FL_IF;
-  p->tf->esp = PGSIZE;
-  p->tf->eip = 0;  // beginning of initcode.S
+/**
+* This method initializes a new user process by allocating memory for the process, setting up the page directory, and initializing the user environment.
+* It loads the initial user code into memory and sets up the process control block with necessary information.
+* 
+* @exception panic("userinit: out of memory?") - This exception is thrown if there is not enough memory available during the initialization process.
+* 
+* Example:
+* userinit();
+*/
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -174,8 +238,23 @@ growproc(int n)
   return 0;
 }
 
-// Create a new process copying p as the parent.
-// Sets up stack to return as if from system call.
+/**
+* This method increases the size of the process memory for the current process by <paramref name="n"/> bytes.
+* If <paramref name="n"/> is positive, it allocates additional memory. If <paramref name="n"/> is negative, it deallocates memory.
+* 
+* @param n The number of bytes by which to grow or shrink the process memory.
+* @return 0 if the memory allocation or deallocation was successful, -1 if an error occurred.
+* @throws -1 if the memory allocation or deallocation fails.
+* 
+* Example:
+* 
+* int result = growproc(100);
+* if(result == 0) {
+*     printf("Memory allocation successful.\n");
+* } else {
+*     printf("Memory allocation failed.\n");
+* }
+*/
 // Caller must set state of returned proc to RUNNABLE.
 int
 fork(void)
@@ -195,9 +274,17 @@ fork(void)
     np->kstack = 0;
     np->state = UNUSED;
     return -1;
-  }
-  np->sz = curproc->sz;
-  np->parent = curproc;
+  /**
+  * This method creates a new process by forking the current process. It allocates a new process, copies the process state from the current process, and initializes the new process with the necessary attributes. 
+  * If successful, it returns the process ID of the newly created process.
+  * If an error occurs during the process creation, it returns -1.
+  * 
+  * @return The process ID of the newly created process if successful, -1 if an error occurs.
+  * @exception Returns -1 if process allocation fails or if copying the process state fails.
+  * 
+  * Example:
+  * int newProcessID = fork();
+  */
   *np->tf = *curproc->tf;
 
   // Clear %eax so that fork returns 0 in the child.
@@ -242,9 +329,12 @@ exit(void)
     }
   }
 
-  begin_op();
-  iput(curproc->cwd);
-  end_op();
+  /**
+  * This method handles the process of exiting a process in the operating system. It closes all open files associated with the current process, releases resources, and handles parent-child relationships.
+  * Exceptions: This method may panic if the current process is the init process or encounters an error during the exit process.
+  * Example:
+  * exit();
+  */
   curproc->cwd = 0;
 
   acquire(&ptable.lock);
@@ -288,8 +378,17 @@ wait(void)
         // Found one.
         pid = p->pid;
         kfree(p->kstack);
-        p->kstack = 0;
-        freevm(p->pgdir);
+        /**
+        * This method waits for any child processes of the current process to exit. 
+        * It scans through the process table to find exited children and handles their cleanup.
+        * If a child process has exited, it releases resources associated with the child process and returns its PID.
+        * If no children have exited or the current process has been killed, it returns -1.
+        * This method utilizes the ptable data structure and synchronization mechanisms for process management.
+        * @return Returns the PID of the exited child process, or -1 if no child processes have exited or if the current process has been killed.
+        * @throws None
+        * Example:
+        * int pid = wait();
+        */
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;
@@ -332,14 +431,15 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
-
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
+      /**
+      * This method represents a scheduler that runs processes in a loop based on their state.
+      * It iterates over the process table to find a runnable process and switches to it.
+      * The chosen process is then switched to user mode, marked as running, and its context is switched.
+      * After the process is done running, it releases the process table lock.
+      * Exceptions: None
+      * Example:
+      * scheduler();
+      */
       switchuvm(p);
       p->state = RUNNING;
 
@@ -376,13 +476,20 @@ sched(void)
     panic("sched running");
   if(readeflags()&FL_IF)
     panic("sched interruptible");
-  intena = mycpu()->intena;
-  swtch(&p->context, mycpu()->scheduler);
-  mycpu()->intena = intena;
-}
-
-// Give up the CPU for one scheduling round.
-void
+/**
+* This method performs the scheduling of processes in the system.
+* It ensures that the current process is properly switched out and the next process is scheduled to run.
+* This method should only be called when holding the process table lock and with interrupts disabled.
+* 
+* Exceptions:
+* - If the process table lock is not held, it will panic with the message "sched ptable.lock".
+* - If the number of CPU interrupts is not 1, it will panic with the message "sched locks".
+* - If the current process state is already set to RUNNING, it will panic with the message "sched running".
+* - If interrupts are enabled, it will panic with the message "sched interruptible".
+* 
+* Example:
+* sched();
+*/
 yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
@@ -391,10 +498,24 @@ yield(void)
   release(&ptable.lock);
 }
 
-// A fork child's very first scheduling by scheduler()
-// will swtch here.  "Return" to user space.
+/**
+* This method releases the ptable.lock and performs initialization functions if it is the first time being called.
+* It is important to note that some initialization functions must be run in the context of a regular process.
+* This method does not return any value.
+* 
+* @exception None
+* 
+* Example:
+* forkret();
+*/
 void
-forkret(void)
+/**
+* This method yields the CPU to other processes by marking the current process as RUNNABLE and calling the scheduler. 
+* It acquires the process table lock before marking the process as RUNNABLE and releases the lock after calling the scheduler.
+* @exception This method does not throw any exceptions.
+* @example
+* yield();
+*/
 {
   static int first = 1;
   // Still holding ptable.lock from scheduler.
@@ -425,8 +546,19 @@ sleep(void *chan, struct spinlock *lk)
   if(lk == 0)
     panic("sleep without lk");
 
-  // Must acquire ptable.lock in order to
-  // change p->state and then call sched.
+  /**
+  * This method puts the current process to sleep and changes its state to SLEEPING. It requires a channel and a spinlock as parameters.
+  * If the current process is not found, it will panic with the message "sleep".
+  * If the spinlock is not provided, it will panic with the message "sleep without lk".
+  * It acquires the ptable.lock to change the process state and then calls sched. It ensures that no wakeup is missed while holding the ptable.lock.
+  * 
+  * @param chan The channel to put the process to sleep.
+  * @param lk The spinlock to be released while acquiring ptable.lock.
+  * @exception panic If the current process is not found or if the spinlock is not provided.
+  * 
+  * Example:
+  * sleep(&chan, &lk);
+  */
   // Once we hold ptable.lock, we can be
   // guaranteed that we won't miss any wakeup
   // (wakeup runs with ptable.lock locked),
@@ -451,9 +583,22 @@ sleep(void *chan, struct spinlock *lk)
   }
 }
 
-//PAGEBREAK!
-// Wake up all processes sleeping on chan.
-// The ptable lock must be held.
+/**
+* This method wakes up a process that is in a sleeping state and waiting on a specific channel.
+* It iterates through the process table and checks for processes that are in the SLEEPING state and waiting on the provided channel.
+* If such a process is found, it changes its state to RUNNABLE, allowing it to be scheduled for execution.
+* 
+* @param chan A pointer to the channel on which the process is waiting.
+* @throws None
+* 
+* Example:
+* 
+* // Define a channel
+* void *channel = (void*)0x12345678;
+* 
+* // Call the wakeup1 method to wake up processes waiting on the specified channel
+* wakeup1(channel);
+*/
 static void
 wakeup1(void *chan)
 {
@@ -464,7 +609,17 @@ wakeup1(void *chan)
       p->state = RUNNABLE;
 }
 
-// Wake up all processes sleeping on chan.
+/**
+* This method wakes up a thread waiting on the specified channel.
+* 
+* @param chan A pointer to the channel on which the thread is waiting.
+* @throws None
+* 
+* Example:
+* 
+* void *channel = (void*)0x12345678;
+* wakeup(channel);
+*/
 void
 wakeup(void *chan)
 {
@@ -473,9 +628,14 @@ wakeup(void *chan)
   release(&ptable.lock);
 }
 
-// Kill the process with the given pid.
-// Process won't exit until it returns
-// to user space (see trap in trap.c).
+/**
+* This method attempts to terminate the process with the specified process ID <paramref name="pid"/>.
+* If the process is found, it sets the 'killed' flag to 1 and changes the state of the process from SLEEPING to RUNNABLE if necessary.
+* If the process is successfully terminated, it returns 0. If the process is not found, it returns -1.
+* Exceptions: This method may throw exceptions if there are issues with acquiring or releasing the process table lock.
+* Example:
+* int result = kill(123); // Terminates the process with PID 123
+*/
 int
 kill(int pid)
 {
@@ -496,10 +656,14 @@ kill(int pid)
   return -1;
 }
 
-//PAGEBREAK: 36
-// Print a process listing to console.  For debugging.
-// Runs when user types ^P on console.
-// No lock to avoid wedging a stuck machine further.
+/**
+* This method prints the process information for each process in the system.
+* It displays the process ID, state, and name of each process.
+* If the process is in the SLEEPING state, it also prints the program counters.
+* Exceptions: None
+* Example:
+* procdump();
+*/
 void
 procdump(void)
 {

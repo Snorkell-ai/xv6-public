@@ -36,6 +36,15 @@ printint(int xx, int base, int sign)
     x = -xx;
   else
     x = xx;
+/**
+* This method prints an integer <paramref name="xx"/> in the specified base <paramref name="base"/> with optional sign <paramref name="sign"/>.
+* It handles exceptions by checking for negative numbers and appending a '-' sign if necessary.
+* Example:
+* int number = -123;
+* int base = 10;
+* int sign = 1;
+* printint(number, base, sign);
+*/
 
   i = 0;
   do{
@@ -60,9 +69,22 @@ cprintf(char *fmt, ...)
 
   locking = cons.locking;
   if(locking)
-    acquire(&cons.lock);
-
-  if (fmt == 0)
+    /**
+    * This method prints formatted output to the console.
+    * It takes a format string <paramref name="fmt"/> and variable number of arguments to be formatted and printed.
+    * Supported format specifiers are:
+    * - %d: Print integer argument in base 10.
+    * - %x or %p: Print integer argument in base 16.
+    * - %s: Print string argument.
+    * - %%: Print a percent sign.
+    * If the format string is null, it will panic with an error message "null fmt".
+    * 
+    * Exceptions:
+    * - If the format string is null, it will panic with an error message "null fmt".
+    * 
+    * Example:
+    * cprintf("Hello, %s! The answer is %d.\n", "World", 42);
+    */
     panic("null fmt");
 
   argp = (uint*)(void*)(&fmt + 1);
@@ -115,6 +137,20 @@ panic(char *s)
   cprintf("lapicid %d: panic: ", lapicid());
   cprintf(s);
   cprintf("\n");
+  /**
+  * This method triggers a system panic with the provided error message <paramref name="s"/>.
+  * It disables interrupts, releases console lock, and prints the error message along with the caller's program counters.
+  * After setting the 'panicked' flag to 1, it freezes the system.
+  * 
+  * @param s The error message to be displayed during the panic.
+  * @throws None
+  * 
+  * Example:
+  * 
+  * // Trigger a panic with a custom error message
+  * char *errorMessage = "Kernel panic - Page fault detected";
+  * panic(errorMessage);
+  */
   getcallerpcs(&s, pcs);
   for(i=0; i<10; i++)
     cprintf(" %p", pcs[i]);
@@ -140,6 +176,13 @@ cgaputc(int c)
   pos |= inb(CRTPORT+1);
 
   if(c == '\n')
+    /**
+    * This method updates the character display on the screen based on the input character <paramref name="c"/>.
+    * It handles newline characters, backspace, and regular characters to update the cursor position and display accordingly.
+    * Exceptions: This method may throw a panic if the cursor position is underflowing or overflowing.
+    * Example:
+    * cgaputc('A'); // Updates the screen display with the character 'A'
+    */
     pos += 80 - pos%80;
   else if(c == BACKSPACE){
     if(pos > 0) --pos;
@@ -162,6 +205,18 @@ cgaputc(int c)
   crt[pos] = ' ' | 0x0700;
 }
 
+/**
+* This method outputs a character to the console.
+* If the system is in a panicked state, the method will disable interrupts and enter an infinite loop.
+* If the input character is a backspace, it will erase the previous character on the console.
+* Otherwise, it will output the character to the console and update the cursor position.
+* 
+* @param c The character to be outputted to the console.
+* @throws None
+* 
+* Example:
+* consputc('A');
+*/
 void
 consputc(int c)
 {
@@ -188,6 +243,12 @@ struct {
 
 #define C(x)  ((x)-'@')  // Control-x
 
+/**
+* This method reads characters from the console using the provided function pointer <paramref name="getc"/> and performs specific actions based on the input character.
+* Exceptions: None
+* Example:
+* consoleintr(getc);
+*/
 void
 consoleintr(int (*getc)(void))
 {
@@ -232,6 +293,20 @@ consoleintr(int (*getc)(void))
   }
 }
 
+/**
+* This method reads characters from the console input and stores them in the destination buffer <paramref name="dst"/> up to a maximum of <paramref name="n"/> characters.
+* If the end-of-file character (C('D')) is encountered, the method will stop reading and return the number of characters read so far.
+* This method may return -1 if the process is killed while reading from the console input.
+* 
+* @param ip Pointer to the inode structure associated with the console input
+* @param dst Pointer to the destination buffer where characters will be stored
+* @param n Maximum number of characters to read
+* @return The number of characters successfully read from the console input
+* @exception Returns -1 if the process is killed while reading from the console input
+* 
+* Example:
+* int n = consoleread(ip, dst, 100);
+*/
 int
 consoleread(struct inode *ip, char *dst, int n)
 {
@@ -270,6 +345,22 @@ consoleread(struct inode *ip, char *dst, int n)
   return target - n;
 }
 
+/**
+* This method writes the characters from the buffer <paramref name="buf"/> to the console output.
+* It unlocks the inode, acquires the console lock, writes each character to the console using consputc function, and then releases the console lock.
+* Finally, it locks the inode again before returning the number of characters written.
+* 
+* @param ip Pointer to the inode structure
+* @param buf Pointer to the character buffer to be written
+* @param n Number of characters to write from the buffer
+* @return The number of characters successfully written to the console
+* @exception This method does not handle any exceptions explicitly.
+* 
+* Example:
+* struct inode *ip;
+* char buffer[] = "Hello, World!";
+* int num_chars = consolewrite(ip, buffer, strlen(buffer));
+*/
 int
 consolewrite(struct inode *ip, char *buf, int n)
 {
@@ -285,6 +376,15 @@ consolewrite(struct inode *ip, char *buf, int n)
   return n;
 }
 
+/**
+* Initializes the console by setting up the console lock and enabling keyboard interrupts.
+* 
+* Exceptions:
+* - None
+* 
+* Example:
+* consoleinit();
+*/
 void
 consoleinit(void)
 {

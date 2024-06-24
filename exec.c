@@ -7,6 +7,22 @@
 #include "x86.h"
 #include "elf.h"
 
+/**
+* This method executes a program specified by the path and arguments provided.
+* It loads the program into memory, sets up the user stack, pushes argument strings, and prepares the stack for execution.
+* If successful, it updates the process's page directory, size, instruction pointer, and stack pointer.
+* If an error occurs during execution, it frees the allocated memory and returns -1.
+*
+* @param path The path to the program to be executed.
+* @param argv An array of arguments to be passed to the program.
+* @return Returns 0 on successful execution, -1 on failure.
+*
+* @exception If the ELF header is invalid or program loading fails, the method returns -1.
+*
+* Example:
+* char *args[] = {"program", "arg1", "arg2", NULL};
+* int result = exec("/path/to/program", args);
+*/
 int
 exec(char *path, char **argv)
 {

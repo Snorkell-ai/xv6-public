@@ -2,12 +2,40 @@
 #include "stat.h"
 #include "user.h"
 
+/**
+* This method writes a single character <paramref name="c"/> to the file descriptor <paramref name="fd"/>.
+* 
+* @param fd The file descriptor to write to.
+* @param c The character to write.
+* @throws None
+* 
+* Example:
+* <code>
+* putc(1, 'A');
+* </code>
+*/
 static void
 putc(int fd, char c)
 {
   write(fd, &c, 1);
 }
 
+/**
+* This method prints an integer value to the specified file descriptor <paramref name="fd"/> in the given base <paramref name="base"/>.
+* If <paramref name="sgn"/> is set to 1 and the input value <paramref name="xx"/> is negative, the output will include a negative sign.
+* The function uses the provided base to convert the integer value into a string representation.
+* 
+* @param fd The file descriptor where the output will be printed.
+* @param xx The integer value to be printed.
+* @param base The base for the conversion (e.g., 10 for decimal).
+* @param sgn Flag indicating whether to include the sign for negative values (1 for yes, 0 for no).
+* 
+* @exception None
+* 
+* Example:
+* int num = -123;
+* printint(1, num, 10, 1); // Output: -123
+*/
 static void
 printint(int fd, int xx, int base, int sgn)
 {
@@ -35,7 +63,21 @@ printint(int fd, int xx, int base, int sgn)
     putc(fd, buf[i]);
 }
 
-// Print to the given fd. Only understands %d, %x, %p, %s.
+/**
+* This method implements a simplified version of the printf function in C, allowing for formatted output to a specified file descriptor.
+* 
+* @param fd The file descriptor where the output will be written.
+* @param fmt The format string containing the format specifiers and text to be printed.
+* @param ... Additional arguments corresponding to the format specifiers in the format string.
+* 
+* @exception This method does not perform any input validation, so passing incorrect format specifiers or arguments can lead to unexpected behavior or crashes.
+* 
+* Example:
+* 
+* int num = 42;
+* char* str = "Hello, World!";
+* printf(1, "The answer is %d and the message is: %s\n", num, str);
+*/
 void
 printf(int fd, const char *fmt, ...)
 {

@@ -44,6 +44,18 @@
 volatile uint *lapic;  // Initialized in mp.c
 
 //PAGEBREAK!
+/**
+* This method writes a value to the Local APIC register at the specified index.
+* It takes two parameters: index - the index of the register to write to, and value - the value to write.
+* This method does not return any value.
+* 
+* Exceptions:
+* - None
+* 
+* Example:
+* To write a value of 100 to the Local APIC register at index 0, you can call the function as follows:
+* lapicw(0, 100);
+*/
 static void
 lapicw(int index, int value)
 {
@@ -51,6 +63,17 @@ lapicw(int index, int value)
   lapic[ID];  // wait for write to finish, by reading
 }
 
+/**
+* This method initializes the local APIC by configuring various registers and settings.
+* It enables the local APIC, sets the spurious interrupt vector, configures the timer for periodic interrupts,
+* disables logical interrupt lines, maps error interrupt to IRQ_ERROR, clears error status register,
+* acknowledges any outstanding interrupts, and synchronizes arbitration IDs.
+* 
+* @exception None
+* 
+* Example:
+* lapicinit();
+*/
 void
 lapicinit(void)
 {
@@ -97,6 +120,19 @@ lapicinit(void)
   lapicw(TPR, 0);
 }
 
+/**
+* This method returns the Local Advanced Programmable Interrupt Controller (APIC) ID.
+* If the Local APIC is not available, it returns 0.
+* 
+* @return The Local APIC ID shifted by 24 bits.
+* 
+* @exception None
+* 
+* @example
+* <code>
+* int id = lapicid();
+* </code>
+*/
 int
 lapicid(void)
 {
@@ -105,7 +141,14 @@ lapicid(void)
   return lapic[ID] >> 24;
 }
 
-// Acknowledge interrupt.
+/**            
+* This method sends an End of Interrupt (EOI) signal to the local Advanced Programmable Interrupt Controller (APIC) if the APIC is enabled.            
+* If the APIC is enabled, it calls the function lapicw with the parameters EOI and 0 to send the EOI signal.            
+* This function helps in managing interrupts and signaling the end of an interrupt to the APIC.            
+* @exception If the APIC is not enabled, the EOI signal will not be sent.            
+* @example            
+* lapiceoi(); // Sends an End of Interrupt signal to the local APIC if it is enabled.            
+*/
 void
 lapiceoi(void)
 {
@@ -113,8 +156,16 @@ lapiceoi(void)
     lapicw(EOI, 0);
 }
 
-// Spin for a given number of microseconds.
-// On real hardware would want to tune this dynamically.
+/**
+* This method introduces a micro delay of the specified duration in microseconds.
+* 
+* @param us The duration of the micro delay in microseconds.
+* 
+* @exception None
+* 
+* @example
+* microdelay(1000); // Introduces a micro delay of 1000 microseconds.
+*/
 void
 microdelay(int us)
 {
@@ -123,8 +174,18 @@ microdelay(int us)
 #define CMOS_PORT    0x70
 #define CMOS_RETURN  0x71
 
-// Start additional processor running entry code at addr.
-// See Appendix B of MultiProcessor Specification.
+/**
+* This method initializes the Local Advanced Programmable Interrupt Controller (LAPIC) to start an application processor (AP).
+* The BSP must initialize the CMOS shutdown code to 0AH and the warm reset vector to point at the AP startup code before using this method.
+* The method follows the universal startup algorithm to reset the other CPU and start the AP.
+* 
+* @param apicid The APIC ID of the application processor to start.
+* @param addr The address where the AP startup code is located.
+* @throws None
+* 
+* Example:
+* lapicstartap(1, 0x1000);
+*/
 void
 lapicstartap(uchar apicid, uint addr)
 {
@@ -171,6 +232,18 @@ lapicstartap(uchar apicid, uint addr)
 #define MONTH   0x08
 #define YEAR    0x09
 
+/**
+* This method reads a value from the CMOS memory by writing to the specified register <paramref name="reg"/>.
+* It first writes to the CMOS_PORT and then waits for a short delay of 200 microseconds using microdelay().
+* Finally, it reads the value from the CMOS_RETURN port and returns it as a result.
+* 
+* @param reg The register to read from in the CMOS memory.
+* @return The value read from the specified register in the CMOS memory.
+* @throws None
+* 
+* Example:
+* uint result = cmos_read(0x0A);
+*/
 static uint
 cmos_read(uint reg)
 {
@@ -180,6 +253,18 @@ cmos_read(uint reg)
   return inb(CMOS_RETURN);
 }
 
+/**
+* This method fills the provided rtcdate structure with the current date and time values obtained from the CMOS registers.
+* It reads the seconds, minutes, hours, day, month, and year values from the CMOS registers and assigns them to the respective fields in the rtcdate structure.
+* 
+* @param r A pointer to the rtcdate structure that will be filled with the date and time values.
+* @exception This method does not throw any exceptions.
+* 
+* Example:
+* struct rtcdate myDate;
+* fill_rtcdate(&myDate);
+* // After this call, myDate will contain the current date and time values obtained from the CMOS registers.
+*/
 static void
 fill_rtcdate(struct rtcdate *r)
 {
@@ -191,7 +276,18 @@ fill_rtcdate(struct rtcdate *r)
   r->year   = cmos_read(YEAR);
 }
 
-// qemu seems to use 24-hour GWT and the values are BCD encoded
+/**
+* This method reads the current time from the CMOS and stores it in the provided struct rtcdate pointer <paramref name="r"/>.
+* It ensures that the CMOS time is not modified while reading it.
+* If the CMOS time is in BCD format, it converts it to binary format before storing it in the rtcdate structure.
+*
+* @param r Pointer to a struct rtcdate where the current time will be stored.
+* @throws None
+*
+* Example:
+* struct rtcdate current_time;
+* cmostime(&current_time);
+*/
 void
 cmostime(struct rtcdate *r)
 {

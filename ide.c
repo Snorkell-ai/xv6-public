@@ -45,7 +45,19 @@ idewait(int checkerr)
   if(checkerr && (r & (IDE_DF|IDE_ERR)) != 0)
     return -1;
   return 0;
-}
+/**
+* This method waits for the IDE device to become ready before proceeding.
+* It checks for specific flags in the status register and waits until the device is ready.
+* If <paramref name="checkerr"/> is set to 1, it also checks for error conditions.
+* If an error is detected and <paramref name="checkerr"/> is set to 1, the method returns -1.
+* 
+* @param checkerr Flag to indicate whether to check for error conditions (1 for yes, 0 for no).
+* @return 0 if the IDE device is ready, -1 if an error is detected and checkerr is set to 1.
+* @exception None
+*
+* Example:
+* idewait(1);
+*/
 
 void
 ideinit(void)
@@ -58,6 +70,16 @@ ideinit(void)
 
   // Check if disk 1 is present
   outb(0x1f6, 0xe0 | (1<<4));
+  /**
+  * This method initializes the IDE by setting up the necessary locks, enabling IO APIC for IDE interrupts, and checking for the presence of disk 1.
+  * It then switches back to disk 0.
+  *
+  * Exceptions:
+  * - None
+  *
+  * Example:
+  * ideinit();
+  */
   for(i=0; i<1000; i++){
     if(inb(0x1f7) != 0){
       havedisk1 = 1;
@@ -69,7 +91,18 @@ ideinit(void)
   outb(0x1f6, 0xe0 | (0<<4));
 }
 
-// Start the request for b.  Caller must hold idelock.
+/**
+* This method starts an IDE operation for the specified block in the file system.
+* It checks if the input buffer <paramref name="b"/> is valid and within the file system size.
+* It calculates the number of sectors per block, sector number, read and write commands based on sector size.
+* It generates an interrupt, sets the number of sectors, and sets the sector address for IDE operation.
+* It handles reading or writing data to/from the IDE device based on buffer flags.
+* @param b Pointer to the buffer structure representing the block to operate on.
+* @throws panic if the input buffer is NULL, block number is incorrect, or sector per block is greater than 7.
+* @example
+* struct buf *myBuffer = getBuffer(); // Get a buffer
+* idestart(myBuffer); // Start IDE operation for the specified buffer
+*/
 static void
 idestart(struct buf *b)
 {
@@ -99,7 +132,14 @@ idestart(struct buf *b)
   }
 }
 
-// Interrupt handler.
+/**
+* This method handles interrupt requests for the IDE controller. It processes the queued buffers, reads data if needed, updates buffer flags, wakes up processes waiting for buffers, and starts disk operations on the next buffer in the queue.
+* 
+* @exception If there are no buffers in the queue, the method returns without processing anything.
+* 
+* @example
+* ideintr();
+*/
 void
 ideintr(void)
 {
@@ -130,10 +170,18 @@ ideintr(void)
   release(&idelock);
 }
 
-//PAGEBREAK!
-// Sync buf with disk.
-// If B_DIRTY is set, write buf to disk, clear B_DIRTY, set B_VALID.
-// Else if B_VALID is not set, read buf from disk, set B_VALID.
+/**
+* This method performs input/output operations on a buffer <paramref name="b"/> in the IDE subsystem.
+* It ensures that the buffer is locked, checks for valid and dirty flags, and verifies the presence of IDE disk 1.
+* It acquires the IDE lock, appends the buffer to the idequeue, starts the disk if necessary, and waits for the request to finish.
+* If any of the conditions are not met, it triggers a panic.
+* 
+* @param b Pointer to the buffer struct
+* @throws panic if the buffer is not locked, there is nothing to do, or IDE disk 1 is not present
+* @example
+* struct buf *myBuffer;
+* iderw(myBuffer);
+*/
 void
 iderw(struct buf *b)
 {

@@ -16,6 +16,15 @@
 
 static int uart;    // is there a uart?
 
+/**
+* This method initializes the UART communication by configuring the settings such as baud rate, data bits, stop bits, and parity.
+* It also enables receive interrupts and checks for the presence of a serial port.
+* If a serial port is detected, it acknowledges pre-existing interrupt conditions and enables interrupts.
+* Finally, it sends a message "xv6..." over the UART communication.
+* Exceptions: This method does not handle any exceptions explicitly.
+* Example:
+* uartinit();
+*/
 void
 uartinit(void)
 {
@@ -48,6 +57,20 @@ uartinit(void)
     uartputc(*p);
 }
 
+/**
+* This method sends a character <paramref name="c"/> to the UART (Universal Asynchronous Receiver-Transmitter) device.
+* It waits for the UART to be ready before sending the character.
+* 
+* @param c The character to be sent to the UART.
+* 
+* @exception If the UART device is not initialized (<paramref name="uart"/> is not set), the function will return without sending the character.
+* 
+* Example:
+* 
+* <code>
+* uartputc('A');
+* </code>
+*/
 void
 uartputc(int c)
 {
@@ -60,6 +83,24 @@ uartputc(int c)
   outb(COM1+0, c);
 }
 
+/**
+* This method reads a character from the UART (Universal Asynchronous Receiver/Transmitter) input buffer.
+* If the UART is not initialized or if there is no data available in the buffer, it returns -1.
+* 
+* @return The character read from the UART input buffer, or -1 if there is an error or no data available.
+* 
+* @exception If the UART is not initialized, it returns -1.
+* @exception If there is no data available in the UART input buffer, it returns -1.
+* 
+* Example:
+* 
+* int receivedChar = uartgetc();
+* if(receivedChar != -1) {
+*     printf("Received character: %c\n", receivedChar);
+* } else {
+*     printf("Error reading character from UART.\n");
+* }
+*/
 static int
 uartgetc(void)
 {
@@ -70,6 +111,14 @@ uartgetc(void)
   return inb(COM1+0);
 }
 
+/**
+* This method handles UART interrupts by calling the consoleintr function with uartgetc as a parameter.
+* 
+* @exception This method does not throw any exceptions.
+* 
+* @example
+* uartintr();
+*/
 void
 uartintr(void)
 {

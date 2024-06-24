@@ -27,9 +27,12 @@ main(void)
   consoleinit();   // console hardware
   uartinit();      // serial port
   pinit();         // process table
-  tvinit();        // trap vectors
-  binit();         // buffer cache
-  fileinit();      // file table
+  /**
+  * This method initializes various components of the operating system, such as the page allocator, kernel page table, processors, interrupt controllers, segment descriptors, console hardware, serial port, process table, trap vectors, buffer cache, file table, disk, and other processors.
+  * Exceptions: This method may throw exceptions if there are issues with initializing any of the components mentioned above.
+  * Example:
+  * main();
+  */
   ideinit();       // disk 
   startothers();   // start other processors
   kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
@@ -53,13 +56,40 @@ mpmain(void)
 {
   cprintf("cpu%d: starting %d\n", cpuid(), cpuid());
   idtinit();       // load idt register
-  xchg(&(mycpu()->started), 1); // tell startothers() we're up
+  /**
+  * This method initializes the multiprocessing environment by performing the following steps:
+  * 1. Switches to kernel virtual memory.
+  * 2. Initializes segment descriptors.
+  * 3. Initializes the local APIC.
+  * 4. Executes the main multiprocessing function.
+  * 
+  * @exception None
+  * 
+  * @example
+  * mpenter();
+  */
   scheduler();     // start running processes
-}
+/**
+* This method initializes the main processor by printing a message with the CPU ID, loading the IDT register, 
+* setting the 'started' flag for the current CPU, and starting the scheduler to run processes.
+* 
+* @exception None
+* 
+* Example:
+* mpmain();
+*/
 
 pde_t entrypgdir[];  // For entry.S
 
-// Start the non-boot (AP) processors.
+/**
+* This method initializes and starts additional processors in a multi-processor system.
+* It writes entry code to unused memory at 0x7000, using the image of entryother.S provided by the linker.
+* For each CPU in the system, it sets the stack, entry point, and page directory information before starting the processor.
+* It waits for each CPU to finish its initialization before proceeding.
+* Exceptions: None
+* Example:
+* startothers();
+*/
 static void
 startothers(void)
 {

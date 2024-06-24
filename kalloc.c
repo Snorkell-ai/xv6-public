@@ -38,11 +38,46 @@ kinit1(void *vstart, void *vend)
 
 void
 kinit2(void *vstart, void *vend)
-{
-  freerange(vstart, vend);
-  kmem.use_lock = 1;
-}
-
+/**
+* This method initializes the kernel memory lock and frees the memory range between the specified start and end addresses.
+* 
+* @param vstart Pointer to the start address of the memory range
+* @param vend Pointer to the end address of the memory range
+* @throws None
+* 
+* Example:
+* void *start = (void*)0x1000;
+* void *end = (void*)0x2000;
+* kinit1(start, end);
+*/
+/**
+* This method frees the memory in the range specified by the input pointers <paramref name="vstart"/> and <paramref name="vend"/>.
+* It iterates over the memory range in page-sized increments and frees each page using the kfree function.
+* 
+* @param vstart Pointer to the start of the memory range to be freed.
+* @param vend Pointer to the end of the memory range to be freed.
+* 
+* @exception This method does not handle any exceptions.
+/**
+* Initializes the kernel memory starting from the address specified by <paramref name="vstart"/> up to the address specified by <paramref name="vend"/>.
+* This function calls the freerange method to free memory within the specified range and sets the kernel memory lock to be used.
+* 
+* @param vstart Pointer to the start address of the kernel memory.
+* @param vend Pointer to the end address of the kernel memory.
+* @exception None
+* 
+* Example:
+* void *start = (void*)0x1000;
+* void *end = (void*)0x2000;
+* kinit2(start, end);
+*/
+* 
+* Example:
+* 
+* void *start = some_start_pointer;
+* void *end = some_end_pointer;
+* freerange(start, end);
+*/
 void
 freerange(void *vstart, void *vend)
 {
@@ -51,11 +86,22 @@ freerange(void *vstart, void *vend)
   for(; p + PGSIZE <= (char*)vend; p += PGSIZE)
     kfree(p);
 }
-//PAGEBREAK: 21
-// Free the page of physical memory pointed at by v,
-// which normally should have been returned by a
-// call to kalloc().  (The exception is when
-// initializing the allocator; see kinit above.)
+/**
+* This method frees the memory allocated for the input pointer <paramref name="v"/> after performing necessary checks.
+* It ensures that the memory address is valid and within the allocated range before freeing it.
+* If the memory address is not valid, it triggers a panic.
+* After freeing the memory, it fills the freed memory with junk to prevent dangling references.
+* Finally, it updates the free list in the memory management system.
+* This method should be used with caution to avoid memory leaks and undefined behavior.
+* 
+* @param v Pointer to the memory block to be freed.
+* @throws panic if the memory address is invalid or out of range.
+* 
+* Example:
+* 
+* char *ptr = (char *)malloc(sizeof(char) * 100);
+* kfree(ptr);
+*/
 void
 kfree(char *v)
 {
@@ -76,9 +122,18 @@ kfree(char *v)
     release(&kmem.lock);
 }
 
-// Allocate one 4096-byte page of physical memory.
-// Returns a pointer that the kernel can use.
-// Returns 0 if the memory cannot be allocated.
+/**
+* This method allocates memory by returning a pointer to a free memory block.
+* It checks if the kernel memory lock is in use, acquires the lock if necessary, retrieves a free memory block from the freelist,
+* updates the freelist, releases the lock if it was acquired, and returns a pointer to the allocated memory block.
+* 
+* @return A pointer to the allocated memory block.
+* 
+* @exception This method may throw exceptions if there are issues with acquiring or releasing the kernel memory lock.
+* 
+* Example:
+* char* ptr = kalloc();
+*/
 char*
 kalloc(void)
 {

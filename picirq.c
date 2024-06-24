@@ -7,6 +7,15 @@
 #define IO_PIC2         0xA0    // Slave (IRQs 8-15)
 
 // Don't use the 8259A interrupt controllers.  Xv6 assumes SMP hardware.
+/**
+* Initializes the Programmable Interrupt Controller (PIC) by masking all interrupts.
+* This method masks all interrupts for both PIC1 and PIC2.
+* 
+* @exception None
+* 
+* @example
+* picinit();
+*/
 void
 picinit(void)
 {

@@ -18,6 +18,14 @@ extern uchar _binary_fs_img_start[], _binary_fs_img_size[];
 static int disksize;
 static uchar *memdisk;
 
+/**
+* This method initializes the IDE by setting the memdisk pointer to the start of the binary file fs_img and calculating the disk size based on the size of the binary file.
+* 
+* @exception None
+* 
+* Example:
+* ideinit();
+*/
 void
 ideinit(void)
 {
@@ -25,16 +33,38 @@ ideinit(void)
   disksize = (uint)_binary_fs_img_size/BSIZE;
 }
 
-// Interrupt handler.
+/**
+* This method represents the interrupt service routine for IDE devices.
+* It does not perform any operations and serves as a placeholder for future implementation.
+* 
+* @throws None
+* 
+* Example:
+* 
+* SupportedLanguage.C
+* void
+* ideintr(void)
+* {
+*   // no-op
+* }
+*/
 void
 ideintr(void)
 {
   // no-op
 }
 
-// Sync buf with disk.
-// If B_DIRTY is set, write buf to disk, clear B_DIRTY, set B_VALID.
-// Else if B_VALID is not set, read buf from disk, set B_VALID.
+/**
+* This method reads or writes data to a buffer in the memory disk.
+* It checks if the buffer is locked, if the data is valid and dirty, if the request is for disk 1, and if the block number is within range.
+* If the buffer is dirty, it updates the memory disk with the buffer data. Otherwise, it updates the buffer with data from the memory disk.
+* 
+* @param b Pointer to the buffer structure
+* @throws panic if the buffer is not locked, if there is nothing to do, if the request is not for disk 1, or if the block is out of range
+* @example
+* struct buf myBuffer;
+* iderw(&myBuffer);
+*/
 void
 iderw(struct buf *b)
 {

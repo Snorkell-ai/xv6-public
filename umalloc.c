@@ -21,6 +21,17 @@ typedef union header Header;
 static Header base;
 static Header *freep;
 
+/**
+* This method frees the memory allocated for a block of memory pointed to by <paramref name="ap"/>.
+* It combines adjacent free blocks to prevent fragmentation and optimize memory usage.
+* 
+* @param ap A pointer to the block of memory to be freed.
+* @throws None
+* 
+* Example:
+* void *ptr = malloc(100 * sizeof(int)); // Allocate memory
+* free(ptr); // Free the allocated memory
+*/
 void
 free(void *ap)
 {
@@ -43,6 +54,20 @@ free(void *ap)
   freep = p;
 }
 
+/**
+* This method allocates memory for a new block of size <paramref name="nu"/> using the morecore algorithm.
+* If the requested size <paramref name="nu"/> is less than 4096, it is adjusted to 4096.
+* If memory allocation using sbrk fails, it returns NULL.
+* The allocated memory block is initialized with a Header structure and its size is set to <paramref name="nu"/>.
+* The memory block is then freed immediately after initialization.
+* Returns a pointer to the newly allocated memory block.
+* @param nu The requested size of the memory block.
+* @return A pointer to the allocated memory block, or NULL if allocation fails.
+* @exception Returns NULL if memory allocation using sbrk fails.
+*
+* Example:
+* Header* newBlock = morecore(8192);
+*/
 static Header*
 morecore(uint nu)
 {
@@ -60,6 +85,17 @@ morecore(uint nu)
   return freep;
 }
 
+/**
+* This method allocates memory for a block of size <paramref name="nbytes"/> and returns a pointer to the allocated memory.
+* It internally manages a free list of memory blocks to optimize memory allocation.
+* 
+* @param nbytes The number of bytes to allocate memory for.
+* @return A pointer to the allocated memory block.
+* @exception Returns NULL if memory allocation fails.
+* 
+* Example:
+* void* ptr = malloc(100);
+*/
 void*
 malloc(uint nbytes)
 {

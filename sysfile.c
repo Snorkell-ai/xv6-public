@@ -18,6 +18,24 @@
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
+/**
+* This method retrieves the file descriptor and file pointer associated with the given file descriptor index.
+* 
+* @param n The index of the file descriptor to retrieve.
+* @param pfd Pointer to an integer where the file descriptor will be stored.
+* @param pf Pointer to a struct file pointer where the file will be stored.
+* @return 0 if successful, -1 if an error occurs.
+* @throws If the file descriptor is out of bounds or the file associated with the descriptor is not found, it returns -1.
+* 
+* Example:
+* int fd;
+* struct file *f;
+* if(argfd(3, &fd, &f) == 0) {
+*     // Successfully retrieved file descriptor and file pointer
+* } else {
+*     // Error handling
+* }
+*/
 static int
 argfd(int n, int *pfd, struct file **pf)
 {
@@ -35,8 +53,24 @@ argfd(int n, int *pfd, struct file **pf)
   return 0;
 }
 
-// Allocate a file descriptor for the given file.
-// Takes over file reference from caller on success.
+/**
+* This method allocates a file descriptor for the given file <paramref name="f"/> in the current process.
+* It searches for an available file descriptor in the process's file descriptor table and assigns the given file to it.
+* If a free file descriptor is found, it returns the assigned file descriptor. Otherwise, it returns -1.
+*
+* @param f The file for which a file descriptor needs to be allocated.
+* @return The allocated file descriptor if successful, -1 if no free file descriptor is available.
+* @exception None
+*
+* Example:
+* struct file *newFile = createNewFile();
+* int fd = fdalloc(newFile);
+* if(fd != -1) {
+*     printf("File descriptor %d allocated successfully.\n", fd);
+* } else {
+*     printf("Failed to allocate file descriptor.\n");
+* }
+*/
 static int
 fdalloc(struct file *f)
 {
@@ -52,6 +86,17 @@ fdalloc(struct file *f)
   return -1;
 }
 
+/**
+* This method duplicates a file descriptor.
+* It takes no parameters.
+* It returns the duplicated file descriptor on success, or -1 on failure.
+* 
+* Exceptions:
+* - Returns -1 if the file descriptor argument is invalid or if allocation fails.
+* 
+* Example:
+* int new_fd = sys_dup();
+*/
 int
 sys_dup(void)
 {
@@ -66,6 +111,23 @@ sys_dup(void)
   return fd;
 }
 
+/**
+* This method reads data from a file specified by the file descriptor and stores it in the provided buffer.
+* 
+* @return Returns the number of bytes read on success, or -1 if an error occurs.
+* 
+* @exception If the file descriptor is invalid, or if there is an issue with reading from the file, -1 is returned.
+* 
+* @example
+* <code>
+* int bytes_read = sys_read();
+* if (bytes_read == -1) {
+*     printf("Error reading from file.\n");
+* } else {
+*     printf("Successfully read %d bytes from file.\n", bytes_read);
+* }
+* </code>
+*/
 int
 sys_read(void)
 {
@@ -78,6 +140,23 @@ sys_read(void)
   return fileread(f, p, n);
 }
 
+/**
+* This method performs a write operation to a file.
+* It takes the file descriptor, buffer pointer, and buffer size as arguments.
+* If any of the arguments are invalid, it returns -1.
+* 
+* Exceptions:
+* - Returns -1 if the file descriptor is invalid.
+* - Returns -1 if the buffer size is negative.
+* - Returns -1 if the buffer pointer is invalid.
+* 
+* Example:
+* To write data to a file:
+* int fd = open("example.txt", O_WRONLY);
+* char buffer[100] = "Hello, World!";
+* int bytes_written = sys_write(fd, buffer, strlen(buffer));
+* close(fd);
+*/
 int
 sys_write(void)
 {
@@ -90,6 +169,17 @@ sys_write(void)
   return filewrite(f, p, n);
 }
 
+/**
+* This method closes a file descriptor in the operating system.
+* It takes no parameters and returns an integer value.
+* If successful, it returns 0. If an error occurs, it returns -1.
+* This method accesses the file descriptor from the current process's file descriptor table and closes the corresponding file.
+* It does not take any input arguments.
+* This method does not throw any exceptions.
+*
+* Example:
+* sys_close();
+*/
 int
 sys_close(void)
 {
@@ -103,6 +193,16 @@ sys_close(void)
   return 0;
 }
 
+/**
+* This method retrieves file status information for the specified file descriptor.
+* It takes no parameters and returns an integer value.
+* If successful, it returns 0; otherwise, it returns -1.
+* This method internally calls functions argfd() and argptr() to retrieve file and stat information.
+* If any errors occur during the process, it returns -1.
+* Exceptions: This method may return -1 if there are errors in retrieving file or stat information.
+* Example:
+* int result = sys_fstat();
+*/
 int
 sys_fstat(void)
 {
@@ -114,7 +214,20 @@ sys_fstat(void)
   return filestat(f, st);
 }
 
-// Create the path new as a link to the same inode as old.
+/**
+* This method creates a hard link between two files specified by the paths <paramref name="old"/> and <paramref name="new"/>.
+* If successful, it increments the link count of the target file and updates its metadata.
+* If unsuccessful, it returns -1.
+*
+* Exceptions:
+* - Returns -1 if unable to retrieve the paths of the old or new files.
+* - Returns -1 if unable to find the target file specified by the old path.
+* - Returns -1 if the target file is a directory.
+* - Returns -1 if unable to create the link in the parent directory.
+*
+* Example:
+* sys_link("/path/to/oldfile", "/path/to/newfile");
+*/
 int
 sys_link(void)
 {
@@ -164,7 +277,24 @@ bad:
   return -1;
 }
 
-// Is the directory dp empty except for "." and ".." ?
+/**
+* This method checks if the directory <paramref name="dp"/> is empty by iterating through its entries.
+* It reads each entry using the readi function and checks if the inode number is 0.
+* If any entry has a non-zero inode number, the method returns 0 indicating the directory is not empty.
+* If all entries have inode number 0, the method returns 1 indicating the directory is empty.
+* @param dp The directory inode to check for emptiness.
+* @return 1 if the directory is empty, 0 otherwise.
+* @exception panic("isdirempty: readi") if there is an error reading the directory entries.
+*
+* Example:
+* struct inode *directory_inode;
+* int result = isdirempty(directory_inode);
+* if (result == 1) {
+*   printf("Directory is empty");
+* } else {
+*   printf("Directory is not empty");
+* }
+*/
 static int
 isdirempty(struct inode *dp)
 {
@@ -180,7 +310,23 @@ isdirempty(struct inode *dp)
   return 1;
 }
 
-//PAGEBREAK!
+/**
+* This method is used to unlink a file or directory specified by the path provided.
+* It checks if the path is valid and if the file/directory can be unlinked.
+* If successful, it unlinks the file/directory and updates the necessary information.
+* If unsuccessful, it returns -1.
+*
+* Exceptions:
+* - Returns -1 if the path is invalid or if the file/directory cannot be unlinked.
+*
+* Example:
+* int result = sys_unlink();
+* if(result == 0) {
+*     printf("File/Directory unlinked successfully.\n");
+* } else {
+*     printf("Error unlinking file/directory.\n");
+* }
+*/
 int
 sys_unlink(void)
 {
@@ -238,6 +384,19 @@ bad:
   return -1;
 }
 
+/**            
+* This method creates a new inode with the specified path, type, major, and minor attributes.            
+*            
+* @param path The path of the new inode to be created.            
+* @param type The type of the new inode (e.g., T_FILE or T_DIR).            
+* @param major The major attribute of the new inode.            
+* @param minor The minor attribute of the new inode.            
+* @return A pointer to the newly created inode if successful, otherwise NULL.            
+* @throws If an error occurs during inode creation or directory linking, a panic exception is raised.            
+*            
+* Example:            
+* struct inode *newInode = create("/newfile.txt", T_FILE, 1, 0);            
+*/
 static struct inode*
 create(char *path, short type, short major, short minor)
 {
@@ -282,6 +441,22 @@ create(char *path, short type, short major, short minor)
   return ip;
 }
 
+/**
+* This method opens a file specified by the path with the given open mode.
+* It creates a new file if O_CREATE flag is set in the open mode.
+* It returns a file descriptor on success, or -1 on failure.
+* 
+* @return int - Returns a file descriptor on success, or -1 on failure.
+* @throws - This method may throw exceptions if arguments are invalid or file operations fail.
+* 
+* Example:
+* int fd = sys_open();
+* if(fd != -1) {
+*     // File opened successfully, perform operations
+* } else {
+*     // Handle error
+* }
+*/
 int
 sys_open(void)
 {
@@ -332,6 +507,18 @@ sys_open(void)
   return fd;
 }
 
+/**
+* This method creates a new directory at the specified path.
+* 
+* @throws -1 if the directory creation fails
+* 
+* Example:
+* 
+* int result = sys_mkdir();
+* if(result == -1) {
+*     printf("Failed to create directory\n");
+* }
+*/
 int
 sys_mkdir(void)
 {
@@ -348,6 +535,19 @@ sys_mkdir(void)
   return 0;
 }
 
+/**
+* This method creates a new special file node in the file system.
+* It takes three arguments: the path of the file, the major number, and the minor number.
+* If successful, it returns 0; otherwise, it returns -1.
+* 
+* Exceptions:
+* - If the path argument is invalid or cannot be accessed, it returns -1.
+* - If either the major or minor number arguments are invalid, it returns -1.
+* - If the creation of the special file node fails, it returns -1.
+* 
+* Example:
+* sys_mknod("/dev/mydevice", 1, 0);
+*/
 int
 sys_mknod(void)
 {
@@ -368,6 +568,16 @@ sys_mknod(void)
   return 0;
 }
 
+/**
+* This method changes the current working directory to the specified path.
+* It takes no parameters and returns an integer value.
+* 
+* Exceptions:
+* - Returns -1 if there is an error in changing the directory.
+* 
+* Example:
+* sys_chdir();
+*/
 int
 sys_chdir(void)
 {
@@ -393,6 +603,14 @@ sys_chdir(void)
   return 0;
 }
 
+/**
+* This method executes a system call with the specified path and arguments.
+* 
+* @throws -1 if unable to retrieve path or arguments
+* 
+* Example:
+* sys_exec("/bin/program", ["/bin/program", "arg1", "arg2"])
+*/
 int
 sys_exec(void)
 {
@@ -419,6 +637,24 @@ sys_exec(void)
   return exec(path, argv);
 }
 
+/**
+* This method creates a pipe, which is a communication mechanism that allows the flow of data between two processes. 
+* It takes no parameters and returns an integer value.
+* 
+* Exceptions:
+* - Returns -1 if there is an error in obtaining the file descriptors or allocating pipes.
+* 
+* Example:
+* int fd[2];
+* int result = sys_pipe(fd);
+* if(result == 0) {
+*     // Pipe creation successful
+*     printf("Pipe created with file descriptors: %d, %d\n", fd[0], fd[1]);
+* } else {
+*     // Error handling
+*     printf("Error creating pipe\n");
+* }
+*/
 int
 sys_pipe(void)
 {
