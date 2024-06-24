@@ -47,7 +47,33 @@ xshort(ushort x)
 {
   ushort y;
   uchar *a = (uchar*)&y;
+  /**
+  * This method represents a section of code that performs a specific task.
+  * It takes two parameters: an integer <paramref name="num"/> and a pointer to void <paramref name="ptr"/>.
+  * The purpose of this method is to perform a specific operation based on the input parameters.
+  * This method does not return any value.
+  * 
+  * @param num An integer representing a specific value used in the operation.
+  * @param ptr A pointer to void that can be used for various purposes within the method.
+  * 
+  * @exception None
+  * 
+  * @example
+  * // Example of using the wsect method
+  * int number = 10;
+  * void* pointer = NULL;
+  * wsect(number, pointer);
+  */
   a[0] = x;
+  /**
+  * This method updates the inode information for a given inode number and inode structure.
+  * It takes two parameters:
+  * @param inodeNum The inode number to update.
+  * @param inodeStruct Pointer to the inode structure to update.
+  * @throws None
+  * Example:
+  * winode(5, &myInode);
+  */
   a[1] = x >> 8;
   return y;
 }
@@ -109,7 +135,19 @@ main(int argc, char *argv[])
 
   for(i = 0; i < FSSIZE; i++)
     wsect(i, zeroes);
-
+  /**
+  * This method converts an unsigned short integer <paramref name="x"/> into a little-endian format.
+  * It takes an unsigned short integer as input and returns the converted value.
+  * 
+  * @param x The unsigned short integer to be converted.
+  * @return The converted unsigned short integer in little-endian format.
+  * @throws None
+  * 
+  * Example:
+  * ushort input = 500;
+  * ushort result = xshort(input);
+  * // After execution, result will contain the value 244 (0xF4 0x01 in little-endian format).
+  */
   memset(buf, 0, sizeof(buf));
   memmove(buf, &sb, sizeof(sb));
   wsect(1, buf);
@@ -120,6 +158,16 @@ main(int argc, char *argv[])
   bzero(&de, sizeof(de));
   de.inum = xshort(rootino);
   strcpy(de.name, ".");
+  /**
+  * This method converts the input unsigned integer <paramref name="x"/> to a little-endian format and returns the result.
+  * 
+  * @param x The unsigned integer to be converted.
+  * @return The converted unsigned integer in little-endian format.
+  * @throws None
+  * 
+  * Example:
+  * uint result = xint(305419896);
+  */
   iappend(rootino, &de, sizeof(de));
 
   bzero(&de, sizeof(de));
@@ -132,6 +180,21 @@ main(int argc, char *argv[])
 
     if((fd = open(argv[i], 0)) < 0){
       perror(argv[i]);
+      /**            
+      * This method initializes a file system image with specified parameters and files.            
+      *            
+      * Exceptions:            
+      * - Throws an error if the file system image cannot be created or opened.            
+      * - Throws an error if there is an issue with allocating inodes or blocks.            
+      * - Throws an error if there is an issue with reading or writing to the file system.            
+      *            
+      * Example:            
+      * To create a file system image 'fs.img' with files 'file1.txt', 'file2.txt', and 'file3.txt', the following code can be used:            
+      *            
+      * int main(int argc, char *argv[]) {            
+      *   // Code snippet to create file system image with specified files            
+      * }            
+      */
       exit(1);
     }
 
@@ -207,6 +270,20 @@ rinode(uint inum, struct dinode *ip)
   *ip = *dip;
 }
 
+/**
+* This method reads the inode data for a given inode number <paramref name="inum"/> and stores it in the provided struct dinode pointer <paramref name="ip"/>.
+* It reads the data block corresponding to the inode number, extracts the inode information, and assigns it to the provided pointer.
+* 
+* @param inum The inode number for which the data needs to be read.
+* @param ip Pointer to the struct dinode where the inode data will be stored.
+* @throws None
+* 
+* Example:
+* uint inum = 10;
+* struct dinode myInode;
+* rinode(inum, &myInode);
+* // After this call, myInode will contain the inode data for inode number 10.
+*/
 void
 rsect(uint sec, void *buf)
 {
@@ -220,6 +297,49 @@ rsect(uint sec, void *buf)
   }
 }
 
+/**
+/**
+* This method writes the contents of the buffer <paramref name="buf"/> to the specified sector <paramref name="sec"/> in the file system.
+* It performs a seek operation to the specified sector and then writes the buffer contents to that sector.
+* If the seek or write operation fails, it will display an error message using perror and exit the program.
+*
+* @param sec The sector number where the buffer will be written.
+* @param buf Pointer to the buffer containing the data to be written.
+* @throws This method may throw exceptions if the seek or write operations fail.
+*
+* Example:
+* uint sector = 5;
+* void *buffer = malloc(BSIZE);
+* // Populate buffer with data
+* wsect(sector, buffer);
+*/
+* This method reads a specified section of data from the file system and stores it in the provided buffer.
+* 
+* @param sec The section number to read from the file system.
+* @param buf A pointer to the buffer where the data will be stored.
+* 
+* @throws This method may throw an exception if there is an error during the file system operations.
+* 
+* Example:
+* 
+* uint section = 2;
+* void *buffer = malloc(BSIZE);
+* rsect(section, buffer);
+*/
+/**
+* This method writes the contents of the inode structure <paramref name="ip"/> to the disk block specified by the inode number <paramref name="inum"/>.
+* It reads the disk block corresponding to the inode number, updates the inode structure, and writes it back to the disk block.
+* 
+* @param inum The inode number of the inode to be written.
+* @param ip Pointer to the inode structure containing the data to be written.
+* @throws Exception if there is an error reading or writing to the disk block.
+* 
+* Example:
+* uint inodeNum = 10;
+* struct dinode inodeData;
+* // Populate inodeData with necessary information
+* winode(inodeNum, &inodeData);
+*/
 uint
 ialloc(ushort type)
 {
@@ -233,7 +353,30 @@ ialloc(ushort type)
   winode(inum, &din);
   return inum;
 }
+/**
+* This method allocates an inode of the specified type.
+* 
+* @param type The type of the inode to be allocated.
+* @return The inode number of the allocated inode.
+* @throws None
+* 
+* Example:
+* uint inodeNumber = ialloc(2);
+*/
 
+/**
+* This method allocates the first <paramref name="used"/> blocks in the file system.
+* It initializes a buffer of size BSIZE and sets the bits corresponding to the allocated blocks.
+* If the number of blocks allocated exceeds the buffer size, an assertion error will be triggered.
+* The bitmap block is then written at sector sb.bmapstart.
+* 
+* @param used The number of blocks to be allocated.
+* @throws Assertion error if the number of blocks allocated exceeds BSIZE*8.
+* @throws Error if there is an issue writing the bitmap block to the sector.
+* 
+* Example:
+* balloc(10);
+*/
 void
 balloc(int used)
 {
@@ -252,6 +395,23 @@ balloc(int used)
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
+/**
+* This method appends data to a file specified by the inode number <paramref name="inum"/>.
+* It reads the inode information, calculates the offset, and appends the data to the file.
+* If the file size exceeds the direct block limit, it uses indirect blocks for storage.
+* 
+* @param inum The inode number of the file to which data will be appended.
+* @param xp Pointer to the data that will be appended.
+* @param n Number of bytes to append.
+* 
+* @throws Assertion error if the calculated file block number exceeds the maximum file size.
+* 
+* Example:
+* uint inum = 5;
+* void *data = "Hello, World!";
+* int size = strlen(data);
+* iappend(inum, data, size);
+*/
 void
 iappend(uint inum, void *xp, int n)
 {

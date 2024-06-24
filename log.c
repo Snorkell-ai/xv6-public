@@ -70,6 +70,16 @@ static void
 install_trans(void)
 {
   int tail;
+/**
+* Initializes the log for the specified device.
+* 
+* @param dev The device number for which the log is being initialized.
+* 
+* @exception panic If the size of the logheader structure is greater than or equal to BSIZE.
+* 
+* Example:
+* initlog(1);
+*/
 
   for (tail = 0; tail < log.lh.n; tail++) {
     struct buf *lbuf = bread(log.dev, log.start+tail+1); // read log block
@@ -85,7 +95,15 @@ install_trans(void)
 static void
 read_head(void)
 {
-  struct buf *buf = bread(log.dev, log.start);
+  /**
+  * This method installs transactions by copying log blocks to destination blocks on disk.
+  * It reads log blocks and destination blocks, copies the data from log blocks to destination blocks, and writes the destination blocks to disk.
+  * 
+  * @exception If there is an error reading or writing blocks, an exception may be thrown.
+  * 
+  * Example:
+  * install_trans();
+  */
   struct logheader *lh = (struct logheader *) (buf->data);
   int i;
   log.lh.n = lh->n;
@@ -101,7 +119,15 @@ read_head(void)
 static void
 write_head(void)
 {
-  struct buf *buf = bread(log.dev, log.start);
+  /**
+  * This method reads the log header information from the specified device and stores it in the log structure.
+  * It reads the log header data from the device starting at the specified location.
+  * 
+  * @throws Exception if there is an error reading the log header or releasing the buffer.
+  * 
+  * Example:
+  * read_head();
+  */
   struct logheader *hb = (struct logheader *) (buf->data);
   int i;
   hb->n = log.lh.n;
@@ -112,6 +138,24 @@ write_head(void)
   brelse(buf);
 }
 
+/**
+* This method recovers the system state from the log by performing the following steps:
+* 1. Reads the head of the log.
+/**
+* This method writes the log header information to the specified device.
+* It reads the log header from the device, updates the number of blocks, and writes the updated header back to the device.
+* 
+* @throws Exception if there is an error reading or writing to the device.
+* 
+* Example:
+* write_head();
+*/
+* 
+* @exception This method may throw exceptions if there are errors during the recovery process.
+* 
+* @example
+* recover_from_log();
+*/
 static void
 recover_from_log(void)
 {
@@ -129,7 +173,16 @@ begin_op(void)
   while(1){
     if(log.committing){
       sleep(&log, &log.lock);
-    } else if(log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE){
+      /**
+      * This method begins an operation by acquiring the log lock and checking if there is enough space in the log for the operation to proceed. 
+      * If there is not enough space, it waits for the committing process to finish before proceeding.
+      * 
+      * Exceptions:
+      * - None
+      * 
+      * Example:
+      * begin_op();
+      */
       // this op might exhaust log space; wait for commit.
       sleep(&log, &log.lock);
     } else {
@@ -148,8 +201,16 @@ end_op(void)
   int do_commit = 0;
 
   acquire(&log.lock);
-  log.outstanding -= 1;
-  if(log.committing)
+    /**
+    * This method ends an operation by decrementing the outstanding count in the log. If the outstanding count reaches 0, it sets a flag to commit the changes. 
+    * It ensures that the log is not already committing, and if so, it panics. If committing is required, it calls the commit function without holding locks to prevent sleeping with locks.
+    * 
+    * Exceptions:
+    * - If log.committing is already true, it will panic.
+    * 
+    * Example:
+    * end_op();
+    */
     panic("log.committing");
   if(log.outstanding == 0){
     do_commit = 1;
@@ -181,7 +242,15 @@ write_log(void)
 
   for (tail = 0; tail < log.lh.n; tail++) {
     struct buf *to = bread(log.dev, log.start+tail+1); // log block
-    struct buf *from = bread(log.dev, log.lh.block[tail]); // cache block
+    /**
+    * This method writes log data from cache blocks to log blocks.
+    * It iterates through the log blocks and copies data from cache blocks to log blocks.
+    * 
+    * @exception If there is an error reading or writing data from/to the blocks, an exception may be thrown.
+    * 
+    * @example
+    * write_log();
+    */
     memmove(to->data, from->data, BSIZE);
     bwrite(to);  // write the log
     brelse(from);
@@ -189,6 +258,14 @@ write_log(void)
   }
 }
 
+/**
+* This method commits the changes made in the log to disk by writing modified blocks from cache to log, writing the header to disk, and installing writes to home locations. If there are no changes in the log, the method does nothing.
+* 
+* @exception None
+* 
+* Example:
+* commit();
+*/
 static void
 commit()
 {
@@ -201,15 +278,18 @@ commit()
   }
 }
 
-// Caller has modified b->data and is done with the buffer.
-// Record the block number and pin in the cache with B_DIRTY.
-// commit()/write_log() will do the disk write.
-//
-// log_write() replaces bwrite(); a typical use is:
-//   bp = bread(...)
-//   modify bp->data[]
-//   log_write(bp)
-//   brelse(bp)
+/**
+* This method writes the contents of the input buffer <paramref name="b"/> to the log. 
+* It checks if the log size is not exceeded and if there is an ongoing transaction. 
+* It then acquires the log lock, checks for duplicate block numbers in the log, updates the log header, 
+* marks the buffer as dirty to prevent eviction, and releases the log lock.
+* @param b The buffer containing the data to be written to the log.
+* @throws panic("too big a transaction") if the log size is exceeded or almost exceeded.
+* @throws panic("log_write outside of trans") if called outside of a transaction.
+* Example:
+* struct buf myBuffer;
+* log_write(&myBuffer);
+*/
 void
 log_write(struct buf *b)
 {

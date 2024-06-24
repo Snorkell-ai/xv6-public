@@ -35,6 +35,19 @@ struct {
   struct buf head;
 } bcache;
 
+/**
+* This method initializes the buffer cache by creating a linked list of buffers and initializing sleep locks for each buffer.
+* It first initializes the lock for the buffer cache.
+* Then, it creates a linked list of buffers by setting the head's previous and next pointers to point to itself.
+* It iterates through the buffer array, setting each buffer's next pointer to point to the head's next pointer, and previous pointer to point to the head.
+* It initializes a sleep lock for each buffer with the name "buffer".
+* Finally, it updates the previous and next pointers of the head and the current buffer to maintain the linked list structure.
+*
+* @exception None
+*
+* Example:
+* binit();
+*/
 void
 binit(void)
 {
@@ -55,9 +68,20 @@ binit(void)
   }
 }
 
-// Look through buffer cache for block on device dev.
-// If not found, allocate a buffer.
-// In either case, return locked buffer.
+/**
+* This method retrieves a buffer from the cache based on the device and block number provided. 
+* If the block is already cached, it increments the reference count and returns the buffer.
+* If the block is not cached, it recycles an unused buffer by selecting one with refcnt=0 and B_DIRTY flag not set.
+* If no suitable buffer is found, it triggers a panic.
+* 
+* @param dev The device number of the buffer to retrieve.
+* @param blockno The block number of the buffer to retrieve.
+* @return A pointer to the retrieved buffer.
+* @throws panic if no suitable buffer is found in the cache.
+* 
+* Example:
+* struct buf *buffer = bget(1, 10);
+*/
 static struct buf*
 bget(uint dev, uint blockno)
 {
@@ -92,7 +116,20 @@ bget(uint dev, uint blockno)
   panic("bget: no buffers");
 }
 
-// Return a locked buf with the contents of the indicated block.
+/**
+* This method reads a block from the specified device and block number.
+* It first retrieves the buffer using the bget function for the given device and block number.
+* If the buffer's flags do not indicate that it is valid (B_VALID flag is not set), it invokes iderw to read from the device.
+* Returns the buffer containing the data read from the specified block.
+* 
+* @param dev The device number from which to read the block.
+* @param blockno The block number to be read from the device.
+* @return A pointer to the buffer containing the data read from the specified block.
+* @throws Exception if there is an error reading from the device or if the buffer retrieval fails.
+* 
+* Example:
+* struct buf *buffer = bread(1, 10);
+*/
 struct buf*
 bread(uint dev, uint blockno)
 {
@@ -105,7 +142,19 @@ bread(uint dev, uint blockno)
   return b;
 }
 
-// Write b's contents to disk.  Must be locked.
+/**
+* This method writes the contents of the buffer <paramref name="b"/> to disk.
+* It first checks if the buffer's lock is held, otherwise it triggers a panic with the message "bwrite".
+* It then sets the B_DIRTY flag in the buffer's flags and proceeds to write the buffer using iderw().
+* 
+* @param b Pointer to the buffer structure to be written to disk.
+* @throws PanicException if the buffer's lock is not held.
+* @see iderw
+* 
+* Example:
+* struct buf myBuffer;
+* bwrite(&myBuffer);
+*/
 void
 bwrite(struct buf *b)
 {
@@ -115,8 +164,19 @@ bwrite(struct buf *b)
   iderw(b);
 }
 
-// Release a locked buffer.
-// Move to the head of the MRU list.
+/**
+* This method releases a buffer <paramref name="b"/> by decrementing its reference count and updating the buffer cache accordingly.
+* It first checks if the buffer lock is held, and if not, it triggers a panic.
+* After releasing the buffer lock, it decrements the reference count of the buffer.
+* If the reference count reaches 0, it updates the buffer cache to remove the buffer from the list of buffers.
+* 
+* @param b Pointer to the buffer structure to be released.
+* @throws panic if the buffer lock is not held.
+* 
+* Example:
+* struct buf *buffer = get_buffer();
+* brelse(buffer);
+*/
 void
 brelse(struct buf *b)
 {

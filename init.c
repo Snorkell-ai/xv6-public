@@ -7,6 +7,13 @@
 
 char *argv[] = { "sh", 0 };
 
+/**
+* This method initializes the system by setting up the console and starting the shell process.
+* It creates a console if it does not exist, sets up stdout and stderr, and then enters a loop to start the shell process.
+* Exceptions: This method may throw exceptions if there are errors in creating the console, forking processes, or executing the shell.
+* Example:
+* main();
+*/
 int
 main(void)
 {

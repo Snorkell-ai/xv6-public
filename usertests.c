@@ -13,7 +13,16 @@ char name[3];
 char *echoargv[] = { "echo", "ALL", "TESTS", "PASSED", 0 };
 int stdout = 1;
 
-// does chdir() call iput(p->cwd) in a transaction?
+/**
+* This method performs a test for creating, changing directory, and deleting a directory named "iputdir".
+* It prints messages to stdout to indicate the progress and outcome of each step.
+* If any step fails, the method exits with an error message.
+* 
+* @exception If any system call (mkdir, chdir, unlink) fails, the method will exit with an error message.
+* 
+* Example:
+* iputtest();
+*/
 void
 iputtest(void)
 {
@@ -38,7 +47,24 @@ iputtest(void)
   printf(stdout, "iput test ok\n");
 }
 
-// does exit() call iput(p->cwd) in a transaction?
+/**
+* This method demonstrates a test scenario for exiting a process after performing various file operations such as creating a directory, changing directory, and deleting a directory.
+* It starts by printing a message "exitiput test" to the standard output.
+* It then forks a child process to perform the file operations.
+* If the fork fails, it prints "fork failed" and exits.
+* In the child process:
+* - It attempts to create a directory named "iputdir" and prints "mkdir failed" if unsuccessful.
+* - It changes the current working directory to "iputdir" and prints "child chdir failed" if unsuccessful.
+* - It tries to delete the directory "../iputdir" and prints "unlink ../iputdir failed" if unsuccessful.
+* The child process then exits.
+* The parent process waits for the child process to complete.
+* Finally, it prints "exitiput test ok" to the standard output.
+*
+* @exception This method may exit if any of the file operations (fork, mkdir, chdir, unlink) fail.
+*
+* Example:
+* exitiputtest();
+*/
 void
 exitiputtest(void)
 {
@@ -70,17 +96,23 @@ exitiputtest(void)
   printf(stdout, "exitiput test ok\n");
 }
 
-// does the error path in open() for attempt to write a
-// directory call iput() in a transaction?
-// needs a hacked kernel that pauses just after the namei()
-// call in sys_open():
-//    if((ip = namei(path)) == 0)
-//      return -1;
-//    {
-//      int i;
-//      for(i = 0; i < 10000; i++)
-//        yield();
-//    }
+/**
+* This method performs a test for opening, writing, and deleting a directory in the file system.
+* It first creates a directory named "oidir" using the mkdir function. If the directory creation fails, it prints an error message and exits.
+* It then forks a child process to perform further operations.
+* In the child process, it attempts to open the "oidir" directory for writing using the open function. If successful, it prints a success message and exits.
+* After a brief delay, it attempts to delete the "oidir" directory using the unlink function. If deletion fails, it prints an error message and exits.
+* Finally, it waits for the child process to complete and prints a success message indicating that the test is complete.
+*
+* Exceptions:
+* - If the directory creation using mkdir fails, the method will print an error message and exit.
+* - If forking a child process fails, the method will print an error message and exit.
+* - If opening the directory for writing using open fails, the method will exit.
+* - If deleting the directory using unlink fails, the method will print an error message and exit.
+*
+* Example:
+* openiputtest();
+*/
 void
 openiputtest(void)
 {
@@ -113,8 +145,21 @@ openiputtest(void)
   printf(stdout, "openiput test ok\n");
 }
 
-// simple file system tests
 
+/**
+* This function opens a file for testing purposes.
+* It prints "open test" to the standard output and attempts to open a file named "echo" with read-only permissions.
+* If opening the file "echo" fails, it prints "open echo failed!" to the standard output and exits the program.
+* It then closes the file descriptor obtained from opening "echo".
+* Next, it attempts to open a file named "doesnotexist" with read-only permissions.
+* If opening the file "doesnotexist" succeeds (which should not happen), it prints "open doesnotexist succeeded!" to the standard output and exits the program.
+* Finally, it prints "open test ok" to the standard output.
+*
+* @throws - This function does not throw any exceptions.
+*
+* Example:
+* opentest();
+*/
 void
 opentest(void)
 {
@@ -135,6 +180,18 @@ opentest(void)
   printf(stdout, "open test ok\n");
 }
 
+/**
+* This method performs a small file test by creating a file named "small", writing alternating sequences of "aaaaaaaaaa" and "bbbbbbbbbb" 100 times, reading the file, and then deleting it.
+* 
+* Exceptions:
+* - If the file creation or opening fails, an error message is displayed and the program exits.
+* - If the write operation fails, an error message is displayed and the program exits.
+* - If the read operation does not read the expected number of bytes, a failure message is displayed and the program exits.
+* - If the file deletion fails, an error message is displayed and the program exits.
+* 
+* Example:
+* writetest();
+*/
 void
 writetest(void)
 {
@@ -184,6 +241,17 @@ writetest(void)
   printf(stdout, "small file test ok\n");
 }
 
+/**
+* This method performs a big files test by creating a large file, writing data to it, reading the data back, and verifying the content.
+* It opens a file named "big" and writes data to it in blocks of 512 bytes until MAXFILE blocks are written.
+* Then it reads the data back from the file, verifies the content of each block, and checks if all blocks were successfully read.
+* Finally, it deletes the file "big" after the test is completed.
+*
+* @throws Error if there is an issue creating or writing to the file, reading from the file, or deleting the file.
+*
+* Example:
+* writetest1();
+*/
 void
 writetest1(void)
 {
@@ -241,6 +309,15 @@ writetest1(void)
   printf(stdout, "big files ok\n");
 }
 
+/**
+* This method creates multiple files and then unlinks them in the SupportedLanguage.C file.
+* It generates a sequence of file creations followed by unlinking the files.
+* This method does not take any input parameters and does not return any values.
+* It uses the 'open' and 'close' functions to create files and the 'unlink' function to remove them.
+* This method does not handle any exceptions explicitly.
+* Example:
+* createtest();
+*/
 void
 createtest(void)
 {
@@ -264,6 +341,12 @@ createtest(void)
   printf(stdout, "many creates, followed by unlink; ok\n");
 }
 
+/**
+* This method creates a directory named "dir0", changes the current working directory to "dir0", then changes back to the parent directory, and finally deletes the "dir0" directory.
+* Exceptions: This method may fail if there are permission issues or if the directory operations fail.
+* Example:
+* dirtest();
+*/
 void dirtest(void)
 {
   printf(stdout, "mkdir test\n");
@@ -290,6 +373,15 @@ void dirtest(void)
   printf(stdout, "mkdir test ok\n");
 }
 
+/**
+* This method executes a test by calling the 'exec' function with the command "echo" and 'echoargv' arguments.
+* If the execution of the command fails, it prints an error message and exits the program.
+* 
+* @exception If the 'exec' function returns a value less than 0, an error message is printed and the program exits.
+* 
+* Example:
+* exectest();
+*/
 void
 exectest(void)
 {
@@ -300,8 +392,23 @@ exectest(void)
   }
 }
 
-// simple fork and pipe read/write
 
+/**
+* This method creates a pipe and forks a child process to write data to the pipe and the parent process to read the data from the pipe.
+* It ensures proper communication between the two processes using the pipe.
+* 
+* Exceptions:
+* - If the pipe creation fails, it prints an error message and exits.
+* - If writing to the pipe fails, it prints an error message and exits.
+* - If reading from the pipe fails or if the data read is incorrect, it prints an error message and returns.
+* - If the total number of bytes read from the pipe is not as expected, it prints an error message and exits.
+* - If forking a child process fails, it prints an error message and exits.
+* 
+* Example:
+* pipe1();
+* This example demonstrates how to use the pipe1 method to create a pipe, write data to it in a child process, and read the data in the parent process.
+* The method ensures proper synchronization and communication between the two processes through the pipe.
+*/
 void
 pipe1(void)
 {
@@ -354,7 +461,22 @@ pipe1(void)
   printf(1, "pipe1 ok\n");
 }
 
-// meant to be run w/ at most two CPUs
+/**
+* This method simulates a preemptive process scheduling algorithm by creating multiple child processes and using pipes for inter-process communication.
+* It forks three child processes and creates a pipe for communication.
+* The first two child processes enter an infinite loop, simulating ongoing tasks.
+* The third child process writes a character 'x' to the pipe and then enters an infinite loop.
+* The parent process reads from the pipe, kills all child processes, waits for them to terminate, and prints a success message.
+*
+* Exceptions:
+* - If there is an error while writing to the pipe, it prints a "preempt write error" message.
+* - If there is an error while reading from the pipe, it prints a "preempt read error" message.
+*
+* Example:
+* preempt();
+*
+* This example demonstrates how to use the preempt method to simulate preemptive process scheduling in a multi-process environment.
+*/
 void
 preempt(void)
 {
@@ -400,7 +522,18 @@ preempt(void)
   printf(1, "preempt ok\n");
 }
 
-// try to find any races between exit and wait
+/**
+* This method creates multiple child processes using fork() and waits for each child process to exit before continuing.
+* It loops 100 times, forking a child process each time. If the fork fails, it prints an error message and returns.
+* If the fork is successful, the parent process waits for the child process to exit. If the wait fails or if the wrong PID is returned, it prints an error message and returns.
+* If the child process is created, it exits.
+* After all iterations are completed successfully, it prints a success message.
+*
+* @throws None
+*
+* Example:
+* exitwait();
+*/
 void
 exitwait(void)
 {
@@ -424,6 +557,17 @@ exitwait(void)
   printf(1, "exitwait ok\n");
 }
 
+/**
+* This method demonstrates memory allocation and deallocation in the C programming language.
+* It allocates memory using malloc, stores pointers to the allocated memory blocks, and then frees the memory blocks.
+* It also includes forking a process, checking memory allocation success, and printing messages accordingly.
+* This method does not take any parameters.
+* It does not return any value.
+* It may print messages to the console using printf.
+* If memory allocation fails, it terminates the parent process by sending a signal.
+* Example:
+* mem();
+*/
 void
 mem(void)
 {
@@ -457,10 +601,18 @@ mem(void)
   }
 }
 
-// More file system tests
-
-// two processes write to the same file descriptor
-// is the offset shared? does inode locking work?
+/**
+* This method demonstrates shared file descriptor functionality by creating a shared file descriptor, writing data to it from both parent and child processes, and then reading and verifying the data.
+* 
+* Exceptions:
+* - If the shared file descriptor cannot be opened for writing, an error message is displayed.
+* - If writing to the shared file descriptor fails, an error message is displayed.
+* - If the shared file descriptor cannot be opened for reading, an error message is displayed.
+* - If the expected counts of 'c' and 'p' characters in the read data do not match, an error message is displayed.
+* 
+* Example:
+* sharedfd();
+*/
 void
 sharedfd(void)
 {
@@ -512,8 +664,19 @@ sharedfd(void)
   }
 }
 
-// four processes write different files at the same
-// time, to test block allocation.
+/**
+* This method creates four files and writes data to them using fork and file operations.
+* It generates four files named f0, f1, f2, f3 and writes data to each file using forked processes.
+* It then reads the data from the files and checks if the data is written correctly.
+* If any errors occur during file operations, appropriate error messages are displayed.
+* This method is used for testing file creation, writing, and reading operations.
+* Exceptions: This method may encounter errors during file operations such as create, write, read, or open failures.
+* Example:
+* fourfiles();
+* This will create four files f0, f1, f2, f3 and write data to them using forked processes.
+* It will then read the data from the files and verify if the data is written correctly.
+* If any errors occur during the process, appropriate error messages will be displayed.
+*/
 void
 fourfiles(void)
 {
@@ -579,7 +742,21 @@ fourfiles(void)
   printf(1, "fourfiles ok\n");
 }
 
-// four processes create and delete different files in same directory
+/**
+* This method demonstrates creating and deleting files in a multi-process environment.
+* It forks multiple child processes to create and delete files using a specific naming convention.
+* It then checks if the files were created or deleted successfully and prints appropriate messages.
+* This method does not take any input parameters or return any values.
+* It is important to note that this method relies on the underlying operating system's file system operations.
+* Any exceptions related to file creation, deletion, or process forking may be encountered during execution.
+*
+* Example:
+* createdelete();
+*
+* In this example, the createdelete method is called, which creates and deletes files in a multi-process environment.
+* The method forks child processes to perform file operations and checks the results.
+* The example demonstrates how to handle file operations in a concurrent setting.
+*/
 void
 createdelete(void)
 {
@@ -652,7 +829,18 @@ createdelete(void)
   printf(1, "createdelete ok\n");
 }
 
-// can I unlink a file and still read it?
+/**
+* This method demonstrates the usage of unlink and file operations in the file system.
+* It creates a file named "unlinkread", writes data to it, reads data from it, and unlinks the file.
+* It also shows error handling for file operations.
+* Note: This method is specific to the SupportedLanguage.C file system and may not be directly applicable to other systems.
+*
+* Exceptions:
+* - If any file operation (open, write, read, unlink) fails, an error message is printed, and the program exits.
+*
+* Example:
+* unlinkread();
+*/
 void
 unlinkread(void)
 {
@@ -698,6 +886,20 @@ unlinkread(void)
   printf(1, "unlinkread ok\n");
 }
 
+/**
+* This method demonstrates the usage of linking and unlinking files in the file system.
+* It creates a file 'lf1', writes data to it, links 'lf1' to 'lf2', reads data from 'lf2', and performs various unlink and link operations.
+* This method is used for testing file system functionalities related to linking and unlinking files.
+* 
+* Exceptions:
+* - If any file operation fails (such as creating, writing, reading, opening, linking, or unlinking), an error message is printed, and the program exits.
+* 
+* Example:
+* linktest();
+* 
+* This example will create files 'lf1' and 'lf2', link 'lf1' to 'lf2', read data from 'lf2', and perform various unlink and link operations.
+* If any operation fails, an error message will be displayed, and the program will exit.
+*/
 void
 linktest(void)
 {
@@ -760,7 +962,14 @@ linktest(void)
   printf(1, "linktest ok\n");
 }
 
-// test concurrent create/link/unlink of the same file
+/**
+* This method performs a test for creating and manipulating files in the system.
+* It generates multiple files named 'C0' to 'C39' and performs various operations like linking, creating, and checking duplicates.
+* The method ensures that there are exactly 40 files with names 'C0' to 'C39' in the directory listing.
+* It also tests forking processes and opening/closing files in different scenarios.
+* Finally, it prints 'concreate ok' to indicate successful completion of the test.
+* Note: This method is for testing purposes and should be used with caution.
+*/
 void
 concreate(void)
 {
@@ -852,8 +1061,20 @@ concreate(void)
   printf(1, "concreate ok\n");
 }
 
-// another concurrent link/unlink/create test,
-// to look for deadlocks.
+/**
+* This method demonstrates the functionality of linking and unlinking files in the file system.
+* It performs a series of operations on a file named "x" based on certain conditions.
+* The method first unlinks the file "x", then forks a process to create a child process.
+* Depending on the value of the process ID, it either performs specific operations on the file "x" or exits the process.
+* The operations include closing and opening the file, linking the file "cat" to "x", and unlinking the file "x".
+* After completing the operations, it waits for the child process to finish or exits if it is the child process.
+* Finally, it prints a message indicating the successful completion of the operations.
+*
+* @throws - This method does not throw any exceptions.
+*
+* Example:
+* linkunlink();
+*/
 void
 linkunlink()
 {
@@ -888,7 +1109,19 @@ linkunlink()
   printf(1, "linkunlink ok\n");
 }
 
-// directory that uses indirect blocks
+/**
+* This method performs a test on creating a large directory with multiple files and then unlinking them.
+* It creates a directory "bd" and then creates 500 links to it with names in the format "x##" where ## ranges from 00 to 63.
+* After creating the links, it unlinks them one by one.
+* If any operation fails during the process, it prints an error message and exits.
+* Finally, it unlinks the original directory "bd" and prints "bigdir ok" if all operations are successful.
+*
+* Exceptions:
+* - If creating the directory or any link fails, it prints an error message and exits the program.
+*
+* Example:
+* bigdir();
+*/
 void
 bigdir(void)
 {
@@ -931,6 +1164,19 @@ bigdir(void)
   printf(1, "bigdir ok\n");
 }
 
+/**
+* This method performs various file operations within a directory named "dd". It includes creating files and directories, writing to files, reading from files, linking files, unlinking files, changing directories, and handling exceptions for various operations.
+* Exceptions:
+* - If any file or directory creation operation fails, an error message is displayed.
+* - If any file operation (open, read, write, close) fails, an error message is displayed.
+* - If any directory operation (mkdir, chdir) fails, an error message is displayed.
+* - If any linking or unlinking operation fails, an error message is displayed.
+* - If attempting to open an unlinked file succeeds, an error message is displayed.
+* - If attempting to create a file within a directory that does not exist succeeds, an error message is displayed.
+* - If attempting to perform operations on non-existent or incorrect paths fails, an error message is displayed.
+* Example:
+* subdir();
+*/
 void
 subdir(void)
 {
@@ -1114,7 +1360,21 @@ subdir(void)
   printf(1, "subdir ok\n");
 }
 
-// test writes that are larger than the log.
+/**
+* This method performs a big write test by creating a file named "bigwrite" and writing data to it in varying sizes.
+* It starts by printing a test message "bigwrite test" to the console.
+* It then proceeds to create the file "bigwrite" and write data to it in increasing sizes from 499 bytes to 12*512 bytes.
+* If the file creation fails, it prints an error message "cannot create bigwrite" and exits the program.
+* For each write operation, it checks if the number of bytes written matches the expected size. If not, it prints an error message and exits.
+* Finally, it prints "bigwrite ok" to indicate successful completion of the big write test.
+*
+* Exceptions:
+* - If the file creation fails (fd < 0), it prints an error message and exits the program.
+* - If the number of bytes written does not match the expected size, it prints an error message and exits the program.
+*
+* Example:
+* bigwrite();
+*/
 void
 bigwrite(void)
 {
@@ -1144,6 +1404,22 @@ bigwrite(void)
   printf(1, "bigwrite ok\n");
 }
 
+/**
+* This method creates a big file named "bigfile" and performs various operations on it.
+* It first creates the file, writes data to it, reads the data back, and performs validations.
+* If any operation fails, it exits the program.
+* 
+* Exceptions:
+* - If the file creation or opening fails, it prints an error message and exits.
+* - If writing to the file fails, it prints an error message and exits.
+* - If reading from the file fails, it prints an error message and exits.
+* - If any validation during reading fails, it prints an error message and exits.
+* 
+* Example:
+* bigfile();
+* This function will create a file named "bigfile", write data to it, read the data back, and perform validations. 
+* If all operations are successful, it will print "bigfile test ok".
+*/
 void
 bigfile(void)
 {
@@ -1200,6 +1476,17 @@ bigfile(void)
   printf(1, "bigfile test ok\n");
 }
 
+/**
+* This method creates directories and files with specific names for testing purposes.
+* It first creates directories with names "12345678901234" and "12345678901234/123456789012345".
+* Then it creates a file with the name "123456789012345/123456789012345/123456789012345".
+* It attempts to open a file with the name "12345678901234/12345678901234/12345678901234".
+* It checks the success or failure of directory creation operations.
+* This method is used for testing directory and file creation functionality.
+* Exceptions: This method may exit the program if any of the directory or file creation operations fail.
+* Example:
+* fourteen();
+*/
 void
 fourteen(void)
 {
@@ -1241,6 +1528,19 @@ fourteen(void)
   printf(1, "fourteen ok\n");
 }
 
+/**
+* This method removes the current directory and its parent directory recursively.
+* It first creates a directory named "dots" and changes the current directory to "dots".
+* Then it attempts to remove the current directory (".") and parent directory ("..") using unlink().
+* If successful, it changes the directory to root ("/") and removes the directories "dots/." and "dots/.." using unlink().
+* Finally, it removes the directory "dots".
+* This method is useful for cleaning up directories in a recursive manner.
+*
+* @throws Error if any of the directory operations fail.
+*
+* Example:
+* rmdot();
+*/
 void
 rmdot(void)
 {
@@ -1280,6 +1580,11 @@ rmdot(void)
   printf(1, "rmdot ok\n");
 }
 
+/**
+* This method demonstrates the functionality of creating directories and files, changing directories, opening, closing, reading, writing files, creating links, and deleting files in the file system.
+* It starts by creating a file named "dirfile" and then performs various operations on it such as changing directory, creating subdirectories, opening files, writing to files, creating links, and deleting files.
+* This method serves as a comprehensive example showcasing different file system operations in SupportedLanguage.C.
+*/
 void
 dirfile(void)
 {
@@ -1339,7 +1644,16 @@ dirfile(void)
   printf(1, "dir vs file OK\n");
 }
 
-// test that iput() is called at the end of _namei()
+/**
+* This method creates empty files and directories with the name "irefd" and performs various file operations within those directories.
+* It iterates through a loop 50 times, creating directories, changing directories, creating empty files, linking files, opening files, and unlinking files.
+* After the loop completes, it changes the directory back to the root ("/") and prints a success message.
+* This method does not take any parameters or return any values.
+* It is important to note that this method does not handle exceptions explicitly and relies on the underlying system calls for error handling.
+*
+* Example:
+* iref();
+*/
 void
 iref(void)
 {
@@ -1373,9 +1687,20 @@ iref(void)
   printf(1, "empty file name OK\n");
 }
 
-// test that fork fails gracefully
-// the forktest binary also does this, but it runs out of proc entries first.
-// inside the bigger usertests binary, we run out of memory first.
+/**
+* This method performs a fork test by forking child processes in a loop and checking for successful forking and waiting.
+* It prints "fork test" and then forks child processes in a loop. If forking fails, it exits the loop. If a child process is created, it exits the child process.
+* After forking 1000 times, it checks if the forking was successful 1000 times. If so, it prints "fork claimed to work 1000 times!" and exits.
+* It then waits for all child processes to finish using the wait system call. If wait stops early or if it gets too many waits, it exits.
+* Finally, it prints "fork test OK" to indicate successful completion of the fork test.
+*
+* Exceptions:
+* - If forking fails, it breaks out of the loop.
+* - If wait stops early or if it gets too many waits, it exits.
+*
+* Example:
+* forktest();
+*/
 void
 forktest(void)
 {
@@ -1411,6 +1736,15 @@ forktest(void)
   printf(1, "fork test OK\n");
 }
 
+/**
+* This method tests the sbrk function in the C programming language. It performs various tests related to memory allocation and deallocation using sbrk.
+* It checks if sbrk can allocate less than a page, grow the address space to a large size, deallocate memory, reallocate memory, downsize memory, and read kernel memory.
+* It also tests the system's behavior when running out of memory and checks if failed allocations are cleaned up properly.
+* This method is designed to verify the functionality and behavior of the sbrk function in different scenarios.
+* Exceptions: This method may exit with an error message if any of the memory allocation or deallocation tests fail.
+* Example:
+* sbrktest();
+*/
 void
 sbrktest(void)
 {
@@ -1546,6 +1880,16 @@ sbrktest(void)
   printf(stdout, "sbrk test OK\n");
 }
 
+/**
+* This method validates an integer pointer by executing a system call with the provided integer value.
+* 
+* @param p Pointer to the integer value to be validated.
+* @throws Exception if an error occurs during the system call execution.
+* 
+* Example:
+* int num = 5;
+* validateint(&num);
+*/
 void
 validateint(int *p)
 {
@@ -1559,6 +1903,16 @@ validateint(int *p)
       "ebx");
 }
 
+/**
+* This method performs a validation test by attempting to crash the kernel with specific inputs.
+* It iterates through memory addresses and attempts to crash the kernel by passing in integers and string pointers.
+* This method is designed for testing purposes and should be used with caution.
+* 
+* @throws None
+* 
+* Example:
+* validatetest();
+*/
 void
 validatetest(void)
 {
@@ -1591,6 +1945,16 @@ validatetest(void)
 
 // does unintialized data start out zero?
 char uninit[10000];
+/**
+* This method performs a BSS test to check if the uninitialized array 'uninit' contains only null characters ('\0').
+* If any non-null character is found, the test fails and the program exits.
+* Otherwise, the test is considered successful.
+*
+* @exception If any non-null character is found in the 'uninit' array, the program will exit.
+*
+* Example:
+* bsstest();
+*/
 void
 bsstest(void)
 {
@@ -1606,9 +1970,15 @@ bsstest(void)
   printf(stdout, "bss test ok\n");
 }
 
-// does exec return an error if the arguments
-// are larger than a page? or does it write
-// below the stack and wreck the instructions/data?
+/**
+* This method demonstrates a test scenario for handling large arguments in a C program. It creates a child process to execute a command with a large number of arguments and checks for successful execution.
+*
+* @exception If the fork operation fails, it will print an error message and exit the program.
+* @exception If the file opening or closing operations fail, it will print an error message and exit the program.
+*
+* Example:
+* bigargtest();
+*/
 void
 bigargtest(void)
 {
@@ -1642,8 +2012,12 @@ bigargtest(void)
   unlink("bigarg-ok");
 }
 
-// what happens when the file system runs out of blocks?
-// answer: balloc panics, so this test is not useful.
+/**
+* This method simulates filling up the file system by creating and writing to files until the disk is full. It then deletes the created files to free up space.
+* Exceptions: This method may throw exceptions if there are issues with file operations such as opening, writing, or closing files.
+* Example:
+* fsfull();
+*/
 void
 fsfull()
 {
@@ -1695,6 +2069,13 @@ fsfull()
   printf(1, "fsfull test finished\n");
 }
 
+/**
+* This method performs a UIO test by writing and reading data to/from RTC_ADDR and RTC_DATA ports.
+* It forks a child process to perform the test and checks the result.
+* Exceptions: This method may fail if the fork operation fails or if there are issues with port communication.
+* Example:
+* uio();
+*/
 void
 uio()
 {
@@ -1724,6 +2105,14 @@ uio()
   printf(1, "uio test done\n");
 }
 
+/**
+* This method performs a test on the argument functionality by opening a file named "init" in read-only mode, reading the contents of the file, and then closing the file.
+* If the file fails to open, an error message is printed and the program exits.
+* This method does not take any arguments.
+* This method does not throw any exceptions.
+* Example:
+* argptest();
+*/
 void argptest()
 {
   int fd;
@@ -1738,6 +2127,19 @@ void argptest()
 }
 
 unsigned long randstate = 1;
+/**
+* This method generates a pseudo-random unsigned integer using a linear congruential generator algorithm.
+* It updates the internal state <paramref name="randstate"/> and returns the generated random number.
+*
+* @return The generated pseudo-random unsigned integer.
+*
+* @exception None
+*
+* @example
+* <code>
+* unsigned int randomNum = rand();
+* </code>
+*/
 unsigned int
 rand()
 {
@@ -1745,6 +2147,15 @@ rand()
   return randstate;
 }
 
+/**
+* This method represents the main function of the program. It executes a series of user tests and operations to validate the functionality of the system.
+* It includes various test functions such as argptest, createdelete, linkunlink, concreate, fourfiles, sharedfd, bigargtest, bigwrite, bsstest, sbrktest, validatetest, opentest, writetest, writetest1, createtest, openiputtest, exitiputtest, iputtest, mem, pipe1, preempt, exitwait, rmdot, fourteen, bigfile, subdir, linktest, unlinkread, dirfile, iref, forktest, bigdir, uio, and exectest.
+* The method also checks for the existence of a file "usertests.ran" and performs necessary operations based on its presence or absence.
+* It concludes by exiting the program after executing all tests.
+* Exceptions: This method does not handle exceptions explicitly and relies on the underlying system to manage errors.
+* Example:
+* main(argc, argv);
+*/
 int
 main(int argc, char *argv[])
 {
